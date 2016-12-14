@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dto>
+	<field id="items" type="myDTOItem" list="true" />
+	<field id="myDTOComment" type="string" previewValue="My Comment" />
+</dto>

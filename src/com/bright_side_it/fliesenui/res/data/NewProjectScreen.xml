@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen title="My Screen" >
+    <dto id="myDTOInstance" type="myDTOList" /> 
+	<container orientation="row">
+		<bar>
+			<cell size="100">
+				<label id="info" text="My Screen" style="large"/>
+			</cell>
+		</bar>
+		<bar>
+			<cell size="80">
+				<textField id="myTextField" labelText="my text field" text="Hello" />
+			</cell>
+			<cell size="20">
+				<button id="myButton" text="Click Me" primary="true"/>
+			</cell>
+		</bar>
+        <bar>
+            <cell size="100">
+                <table id="myTable" dto="myDTOInstance.items" idDTOField="myID" style="small">
+                    <column size="40" text="My Text">
+                        <tableLabel textDTOField="myText" />
+                    </column>
+                    <column size="40" text="My Number">
+                        <tableLabel textDTOField="myValue" />
+                    </column>
+                    <column size="20" text="Actions">
+                        <tableButton id="chooseButton"  text="Choose" />
+                    </column>
+                </table>
+            </cell>
+        </bar>
+    </container>
+</screen>

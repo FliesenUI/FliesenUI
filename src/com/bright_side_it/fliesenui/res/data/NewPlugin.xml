@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin-may-become-invalid-in-different-versions>
+	<parameter id="myParam1" />
+	<variable id="myVarTextInput" type="string" />
+	<variable id="myVarButtonText" type="string" />
+	<event id="myEvent1" />
+	<html-code type="Java-FX">
+		<![CDATA[
+            <h1>JFX version</h1>
+            <h3>Param = ${myParam1}</h3>
+			<input type="text" ng-model="${myVarTextInput}"></input>
+			<button ng-click="pluginMyPlugin1EventMyEvent1();">{{${myVarButtonText}}}</button>		
+		]]>
+	</html-code>
+	<html-code type="Web">
+		<![CDATA[
+            <h1>Web browser version</h1>
+            <h3>Param = ${myParam1}</h3>
+			<input type="text" ng-model="${myVarTextInput}"></input>
+			<button ng-click="pluginMyPlugin1EventMyEvent1();">{{${myVarButtonText}}}</button>		
+		]]>
+	</html-code>
+</plugin-may-become-invalid-in-different-versions>

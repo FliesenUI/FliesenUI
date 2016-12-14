@@ -1,0 +1,146 @@
+.fliesenUIButton {
+    background-color: #fafafa; 
+    border: #e1e1e1;
+    border-style: solid;
+    color: black;
+    padding: 0px 12px;
+    text-align: center;
+    vertical-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    height: 45px;
+	border-width: 2px;
+	text-transform: uppercase;
+	font-size: 0.8em;
+}
+
+.fliesenUIButton:active {
+    background-color: #e1e1e1; 
+    color: black;
+}
+
+
+.fliesenUIImageButton {
+	border-radius: 50%;
+    background-color: #fafafa; 
+    border: #e1e1e1;
+    border-style: solid;
+    color: black;
+    padding: 0px 0px;
+    vertical-align: center;
+    horizontal-align: center;
+    display: inline-block;
+    margin: 0px 0px;
+    cursor: pointer;
+    height: 45px;
+    width: 45px;
+	border-width: 2px;
+	font-size: 0.8em;
+}
+
+.fliesenUIImageButton:active {
+    background-color: #e1e1e1; 
+}
+
+.fliesenUIButtonExtendSmall {
+    padding: 0px 5px;
+    margin: 0px 0px;
+    height: 35px;
+    text-transform: none;
+}
+
+.fliesenUIButtonExtendTiny {
+    padding: 0px 1px;
+    margin: 0px 0px;
+    height: 25px;
+    font-size: 12px;
+    text-transform: none;
+}
+
+.fliesenUIPrimary {
+	color: white;
+    background-color: #3f51b5; 
+    border:none;
+}
+
+.fliesenUITinyButton {
+    background-color: #fafafa; 
+    border: #e1e1e1;
+    border-style: solid;
+    color: black;
+    padding: 0px 0px;
+    text-align: center;
+    vertical-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 0px 0px;
+    cursor: pointer;
+	border-width: 2px;
+	font-size: 0.8em;
+}
+.fliesenUINormalSizeTableButton {
+    background-color: #fffafa; 
+    border: #e1e1e1;
+    border-style: solid;
+    color: black;
+    padding: 0px 6px;
+    text-align: center;
+    vertical-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0px 0px;
+    cursor: pointer;
+    height: 45px;
+	border-width: 2px;
+	text-transform: uppercase;
+	font-size: 0.8em;
+}
+.textHighlightError {
+  display: inline-block;
+  position: relative;
+}
+.textHighlightError:before {
+  content: "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+  font-size: 0.6em;
+  font-weight: 700;
+  font-family: Times New Roman, Serif;
+  color: red;
+  width: 100%;
+  position: absolute;
+  top: 7px;
+  left: -1px;
+  overflow: hidden;
+}
+.textHighlightWarning {
+  display: inline-block;
+  position: relative;
+}
+.textHighlightWarning:before {
+  content: "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+  font-size: 0.6em;
+  font-weight: 700;
+  font-family: Times New Roman, Serif;
+  color: orange;
+  width: 100%;
+  position: absolute;
+  top: 7px;
+  left: -1px;
+  overflow: hidden;
+}
+
+.fade-in-out {
+  transition: 0.6s linear all;  
+  opacity: 1;
+}
+
+.fade-in-out.ng-hide {
+  opacity: 0;
+}
+.fade-in-out.ng-show {
+  opacity: 1;
+}
+

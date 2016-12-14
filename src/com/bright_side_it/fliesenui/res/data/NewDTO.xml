@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dto>
+	<field id="myNumber001" type="long" previewValue="1234" />
+	<field id="myNumber002" type="long" previewValue="5678" />
+	<field id="myText001" type="string" previewValue="hello" />
+	<field id="myTextList" type="string" list="true" previewValue="myTextListItem" />
+	<field id="myOtherDTO" type="otherDTO"  />
+</dto>

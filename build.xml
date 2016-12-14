@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="createJar" name="Fliesen UI Command Line">
+	<taskdef resource="proguard/ant/task.properties"
+	         classpath="C:/PortablePrograms/Proguard/proguard5.2.1/lib/proguard.jar" />
+	
+    <property name="version" value="01_00_00"/>
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
+    <property name="file.jarfile" value="${dir.jarfile}/FliesenUI_v${version}.jar"/>
+    <target name="createJar">
+    	<delete file="${file.jarfile}"/>
+        <jar destfile="${file.jarfile}" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="com.bright_side_it.fliesenui.base.cli.FLUICommandLineInterface"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/bin" excludes="**/*Test*.class"/>
+            <zipfileset excludes="META-INF/*.SF" src="libs/gson-2.4.jar"/>
+        </jar>
+    </target>
+	
+</project>

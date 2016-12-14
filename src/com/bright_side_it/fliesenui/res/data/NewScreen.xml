@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen title="My Screen" >
+	<container orientation="row">
+		<bar>
+			<cell size="100">
+				<label id="info" text="My Screen" style="large"/>
+			</cell>
+		</bar>
+		<bar>
+			<cell size="80">
+				<textField id="myTextField" labelText="my text field" text="Hello" />
+			</cell>
+			<cell size="20">
+				<button id="myButton" text="Click Me" primary="true"/>
+			</cell>
+		</bar>
+    </container>
+</screen>

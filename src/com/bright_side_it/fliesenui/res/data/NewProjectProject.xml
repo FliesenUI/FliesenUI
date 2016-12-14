@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FliesenUIProject
+	formatVersion="1"
+    title="My Project" 
+    startScreenID="myScreen"
+    margin="20" 
+    darkTheme="false" 
+    themePrimaryPalette="light-blue" 
+    themeAccentPalette="blue-grey" 
+    themeBackgroundPalette="blue-grey" 
+    themeWarnPalette="red"
+>
+		<output sourceDirPath="§{outputDir}" flavor="Java"/>
+</FliesenUIProject>
