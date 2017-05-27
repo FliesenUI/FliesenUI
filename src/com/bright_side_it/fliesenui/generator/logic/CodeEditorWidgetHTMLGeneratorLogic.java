@@ -10,8 +10,12 @@ public class CodeEditorWidgetHTMLGeneratorLogic {
 
     public void generateHTML(HTMLTag parentTag, ScreenDefinition screenDefinition, CodeEditorWidget widget) throws Exception {
     	String screenIDPrefix = GeneratorUtil.createScreenIDPrefix(screenDefinition);
-        tagLogic.addTag(parentTag, "textarea", "&lt;testFromGenerator attrib='7'&gt;Test&lt;/testFromGenerator&gt;", "id", screenIDPrefix + widget.getID(), "name",
+    	HTMLTag divTag = tagLogic.addTag(parentTag, "div");
+        tagLogic.addTag(divTag, "textarea", "&lt;testFromGenerator attrib='7'&gt;Test&lt;/testFromGenerator&gt;", "id", screenIDPrefix + widget.getID(), "name",
         		screenIDPrefix + widget.getID());
+        if (widget.getHeight() != null){
+        	tagLogic.setAttribute(divTag, "style", "width:99%; height:" + widget.getHeight() + "px;");
+        }
     }
 
 

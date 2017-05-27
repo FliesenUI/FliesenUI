@@ -19,6 +19,7 @@ public class EventParameterDAO {
     public static final String WIDGET_PROPERTY_NAME_TEXT = "text";
     public static final String WIDGET_PROPERTY_NAME_SELECTED = "selected";
     public static final String WIDGET_PROPERTY_NAME_SELECTED_ID = "selectedID";
+    public static final String WIDGET_PROPERTY_NAME_CHECKED_ROW_IDS = "checkedRowIDs";
     public static final String WIDGET_PROPERTY_NAME_LINE = "line";
     public static final String WIDGET_PROPERTY_NAME_POS_IN_LINE = "posInLine";
     private static final String NODE_NAME = "eventParameter";
@@ -58,6 +59,8 @@ public class EventParameterDAO {
             return WidgetProperty.SELECTED;
         } else if (WIDGET_PROPERTY_NAME_SELECTED_ID.equals(string)) {
         	return WidgetProperty.SELECTED_ID;
+        } else if (WIDGET_PROPERTY_NAME_CHECKED_ROW_IDS.equals(string)) {
+        	return WidgetProperty.CHECKED_ROW_IDS;
         } else if (WIDGET_PROPERTY_NAME_LINE.equals(string)) {
             return WidgetProperty.LINE;
         } else if (WIDGET_PROPERTY_NAME_POS_IN_LINE.equals(string)) {

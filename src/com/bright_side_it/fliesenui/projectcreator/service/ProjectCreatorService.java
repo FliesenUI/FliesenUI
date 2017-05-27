@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.FileUtil;
-import com.bright_side_it.fliesenui.project.dao.DefinitionResourceDAO;
+import com.bright_side_it.fliesenui.project.dao.ProjectResourceDAO;
 import com.bright_side_it.fliesenui.project.service.ProjectReaderService;
 import com.bright_side_it.fliesenui.res.dao.ResourceDAO;
 import com.bright_side_it.fliesenui.res.dao.ResourceDAO.Resource;
@@ -37,17 +37,17 @@ public class ProjectCreatorService {
 	}
 
 	private void createScreenFile(File projectDir) throws Exception {
-        File file = new DefinitionResourceDAO().getScreenFile(projectDir, SCREEN_ID);
+        File file = new ProjectResourceDAO().getScreenFile(projectDir, SCREEN_ID);
         createDirectory(file.getParentFile());
         new ResourceDAO().copyResourceToFile(Resource.NEW_PROJECT_SCREEN_TEMPLATE, file);
     }
 
     private void createDTOFiles(File projectDir) throws Exception {
-        File file = new DefinitionResourceDAO().getDTOFile(projectDir, DTO1_ID);
+        File file = new ProjectResourceDAO().getDTOFile(projectDir, DTO1_ID);
         createDirectory(file.getParentFile());
 
         new ResourceDAO().copyResourceToFile(Resource.NEW_PROJECT_DTO1_TEMPLATE, file);
-        file = new DefinitionResourceDAO().getDTOFile(projectDir, DTO2_ID);
+        file = new ProjectResourceDAO().getDTOFile(projectDir, DTO2_ID);
         new ResourceDAO().copyResourceToFile(Resource.NEW_PROJECT_DTO2_TEMPLATE, file);
     }
 

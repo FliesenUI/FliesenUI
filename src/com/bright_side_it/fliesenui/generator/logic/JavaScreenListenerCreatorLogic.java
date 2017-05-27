@@ -3,6 +3,7 @@ package com.bright_side_it.fliesenui.generator.logic;
 import static com.bright_side_it.fliesenui.base.util.BaseUtil.in;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -16,9 +17,13 @@ import com.bright_side_it.fliesenui.plugin.model.PluginEvent;
 import com.bright_side_it.fliesenui.plugin.model.PluginVariable;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener.EventListenType;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameter;
+import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
@@ -26,10 +31,8 @@ import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetColumn;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem;
-import com.bright_side_it.fliesenui.screendefinition.model.Timer;
-import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem.TableWidgetType;
+import com.bright_side_it.fliesenui.screendefinition.model.Timer;
 
 public class JavaScreenListenerCreatorLogic {
 
@@ -44,12 +47,14 @@ public class JavaScreenListenerCreatorLogic {
         result.append("package " + GeneratorConstants.GENERATED_SCREEN_PACKAGE_NAME + ";\n");
         result.append("\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + "." + GeneratorConstants.CLIENT_PROPERTIES_DTO_CLASS_NAME + ";\n");
+        result.append("import java.util.List;\n");
         result.append(createDTOImportStatements(screenDefinition));
         result.append("\n");
         result.append("public interface " + className + "{\n");
         result.append(createOnLoadedMethod(project, screenDefinition, replyClassName));
         result.append("    void onInputDialogResult(" + replyClassName + " reply, String referenceID, String dialogResult);\n");
         result.append("    void onConfirmDialogResult(" + replyClassName + " reply, String referenceID, boolean confirmed);\n");
+        result.append("    void onListChooserResult(" + replyClassName + " reply, String referenceID, java.util.List<String> selectedIDs);\n");
         result.append(createClickedMethods(project, screenDefinition));
         result.append(createChangedMethods(project, screenDefinition));
         result.append(createTimerMethods(project, screenDefinition));
@@ -57,8 +62,9 @@ public class JavaScreenListenerCreatorLogic {
         result.append(createPluginEventMethods(project, screenDefinition));
         result.append(createAllTableButtonClickedMethods(project, screenDefinition, replyClassName));
         result.append(createAllTableRowClickedMethods(project, screenDefinition, replyClassName));
-        result.append(createAllCodeEditorMethods(screenDefinition, replyClassName));
+//        result.append(createAllCodeEditorMethods(screenDefinition, replyClassName));
         result.append(createFileUploadMethods(project, screenDefinition));
+        result.append(createEventListenerMethods(project, screenDefinition));
         result.append("}");
 
         result = GeneratorUtil.addJavaGeneratedCommend(result);
@@ -175,6 +181,30 @@ public class JavaScreenListenerCreatorLogic {
         return result;
     }
 
+    private StringBuilder createEventListenerMethods(Project project, ScreenDefinition screenDefinition) throws Exception {
+    	StringBuilder result = new StringBuilder();
+    	String replyClassName = GeneratorUtil.getReplyClassName(screenDefinition);
+    	for (EventListener i : BaseUtil.getAllEventListenersOfContainer(screenDefinition, EventListenType.BACK_ACTION)) {
+			result.append("    void " + GeneratorUtil.createJavaBackActionMethodName() + "(" + replyClassName + " reply"
+					+ createEventParameterList(project, screenDefinition, i) + ");\n");
+    	}
+    	Set<String> createdKeyEventMethods = new TreeSet<String>();
+    	for (CodeEditorWidget codeEditor : BaseUtil.getAllCodeEditorWidgets(screenDefinition)){
+    		List<EventListener> eventListeners = BaseUtil.getAllEventListenersOfContainer(codeEditor, EventListenType.KEY_PRESS, EventListenType.KEY_DOWN);
+        	if (!eventListeners.isEmpty()) {
+        		String methodName = GeneratorUtil.createJavaKeyEventActionMethodName(codeEditor);
+        		if (!createdKeyEventMethods.contains(methodName)){
+        			result.append("    void " + methodName + "(" + replyClassName + " reply");
+        			result.append(", " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIKeyEvent keyEvent");
+//        	    	result.append(", char keyChar, String editorText, int line, int posInLine, " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".KeyModifier keyModifier");
+        			result.append(createEventParameterList(project, screenDefinition, eventListeners.get(0)) + ");\n");
+        			createdKeyEventMethods.add(methodName);
+        		}
+        	}
+    	}
+    	return result;
+    }
+    
     private StringBuilder createFileUploadMethods(Project project, ScreenDefinition screenDefinition) throws Exception {
     	StringBuilder result = new StringBuilder();
     	String replyClassName = GeneratorUtil.getReplyClassName(screenDefinition);
@@ -261,6 +291,8 @@ public class JavaScreenListenerCreatorLogic {
                     result.append("String " + TextUtil.addSuffixIfMissing(i.getWidgetID(), "Text"));
                 } else if (i.getWidgetProperty() == WidgetProperty.SELECTED_ID) {
                     result.append("String " + i.getWidgetID() + "SelectedID");
+                } else if (i.getWidgetProperty() == WidgetProperty.CHECKED_ROW_IDS) {
+                    result.append("List<String> " + i.getWidgetID() + "CheckedRowIDs");
                 } else if (i.getWidgetProperty() == WidgetProperty.SELECTED) {
                     result.append("boolean " + i.getWidgetID() + "Selected");
                 } else if (i.getWidgetProperty() == WidgetProperty.LINE) {
@@ -276,23 +308,23 @@ public class JavaScreenListenerCreatorLogic {
         return result;
     }
 
-    private StringBuilder createAllCodeEditorMethods(ScreenDefinition screenDefinition, String replyClassName) {
-        StringBuilder result = new StringBuilder();
-        for (CodeEditorWidget i : BaseUtil.getAllCodeEditorWidgets(screenDefinition)) {
-            result.append(createCodeEditorMethods(screenDefinition, replyClassName, i));
-        }
-        return result;
-    }
+//    private StringBuilder createAllCodeEditorMethods(ScreenDefinition screenDefinition, String replyClassName) {
+//        StringBuilder result = new StringBuilder();
+//        for (CodeEditorWidget i : BaseUtil.getAllCodeEditorWidgets(screenDefinition)) {
+//            result.append(createCodeEditorMethods(screenDefinition, replyClassName, i));
+//        }
+//        return result;
+//    }
 
-    private StringBuilder createCodeEditorMethods(ScreenDefinition screenDefinition, String replyClassName, CodeEditorWidget codeEditor) {
-        StringBuilder result = new StringBuilder();
-        String javaMethodName = GeneratorUtil.getContextAssistListenerMethodName(codeEditor);
-        result.append("    void " + javaMethodName + "(" + replyClassName + " reply, String editorText, int line, int posInLine);\n");
-        result.append("\n");
-        javaMethodName = GeneratorUtil.getSaveListenerMethodName(codeEditor);
-        result.append("    void " + javaMethodName + "(" + replyClassName + " reply, String editorText);\n");
-        return result;
-    }
+//    private StringBuilder createCodeEditorMethods(ScreenDefinition screenDefinition, String replyClassName, CodeEditorWidget codeEditor) {
+//        StringBuilder result = new StringBuilder();
+//        String javaMethodName = GeneratorUtil.getContextAssistListenerMethodName(codeEditor);
+//        result.append("    void " + javaMethodName + "(" + replyClassName + " reply, String editorText, int line, int posInLine);\n");
+//        result.append("\n");
+//        javaMethodName = GeneratorUtil.getSaveListenerMethodName(codeEditor);
+//        result.append("    void " + javaMethodName + "(" + replyClassName + " reply, String editorText);\n");
+//        return result;
+//    }
 
 
 

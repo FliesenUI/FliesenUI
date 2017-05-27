@@ -7,8 +7,8 @@ import java.util.List;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.FileUtil;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter;
-import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter.DataType;
+import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
@@ -40,6 +40,9 @@ public class JavaScreenCreatorLogic {
         result.append("\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIScreen;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIRequest;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAbstractReply;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIString.StringLanguage;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIUtil;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + "." + GeneratorConstants.CLIENT_PROPERTIES_DTO_CLASS_NAME + ";\n");
         result.append("\n");
         result.append(createDTOImportStatements(screenDefinition));
@@ -51,8 +54,8 @@ public class JavaScreenCreatorLogic {
         result.append("        this.listener = listener;\n");
         result.append("    }\n");
         result.append("\n");
+//        result.append(createOnRequestOldMethodRequestObject(project, screenDefinition, replyClassName));
         result.append(createOnRequestMethodRequestObject(project, screenDefinition, replyClassName));
-        result.append("\n");
         result.append("\n");
         result.append("    @Override\n");
         result.append("    public String getID() {\n");
@@ -67,13 +70,83 @@ public class JavaScreenCreatorLogic {
         FileUtil.writeStringToFile(destFile, result.toString());
     }
 
+//    private StringBuilder createOnRequestOldMethodRequestObject(Project project, ScreenDefinition screenDefinition, String replyClassName) throws Exception {
+//    	StringBuilder result = new StringBuilder();
+//    	result.append("    public String onFLUIRequestOld(FLUIRequest request, String uploadedFileName, InputStream uploadedFileInputStream) {\n");
+//    	result.append("        Map<String, Object> parameters = request.getParameters();\n");
+//    	result.append("        String action = request.getAction();\n");
+//    	
+//    	result.append("        StringLanguage currentLanguage = null;\n");
+//    	result.append("        try{\n");
+//		result.append("            currentLanguage = StringLanguage.valueOf(request.getCurrentLanguage());\n");
+//		result.append("        } catch (Exception ignored){\n");
+//		result.append("        }\n");
+//
+//    	result.append("        Gson gson = new Gson();\n");
+//    	result.append("        " + replyClassName + " reply = new " + replyClassName + "(currentLanguage);\n");
+//    	boolean first = true;
+//    	for (RequestToCallTranslation translation : new RequestToCallTranslationBuilder().buildTranslations(project, screenDefinition)) {
+//    		String prefix = "} else ";
+//    		if (first) {
+//    			first = false;
+//    			prefix = "";
+//    		}
+//    		result.append("        " + prefix + "if (\"" + translation.getActionName() + "\".equals(action)) {\n");
+//    		result.append("            listener." + translation.getMethodName() + "(");
+//    		if (translation.isFileUploadMethod()){
+//    			result.append("uploadedFileName, uploadedFileInputStream");
+//    		} else {
+//    			result.append("reply");
+//    		}
+//    		for (ReplyToCallTranslationParameter parameter : BaseUtil.toEmptyCollectionIfNull(translation.getParameter())) {
+//				result.append(", ");
+//    			if (parameter.getDTOClassName() != null) {
+//    				result.append("gson.fromJson((String)parameters.get(\"" + parameter.getKey() + "\"), " + parameter.getDTOClassName() + ".class)");
+//    			} else if (parameter.getDataType() == DataType.KEY_MODIFIER){
+//    				result.append("gson.fromJson((String)parameters.get(\"" + parameter.getKey() + "\"), " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".KeyModifier.class)");
+//    			} else if (parameter.getDataType() == DataType.CHARACTER){
+//    				result.append("((String)parameters.get(\"" + parameter.getKey() + "\")).charAt(0)");
+//    			} else {
+//    				result.append("(");
+//    				String suffix = "";
+//    				if (parameter.getDataType() == DataType.INT) {
+//    					suffix = ").intValue()";
+//    					result.append("(Double");
+//    				} else if (parameter.getDataType() == DataType.STRING) {
+//    					result.append("String");
+//    				} else if (parameter.getDataType() == DataType.BOOLEAN) {
+//    					result.append("boolean");
+//    				} else if (parameter.getDataType() == DataType.LIST_OF_STRING) {
+//    					result.append("java.util.List<String>");
+//    				} else {
+//    					throw new Exception("Unknown parameter data type: " + parameter.getDataType());
+//    				}
+//    				result.append(")");
+//    				result.append("parameters.get(\"" + parameter.getKey() + "\")" + suffix);
+//    			}
+//    		}
+//    		result.append(");\n");
+//    	}
+//    	result.append("        }\n");
+//    	result.append("        return reply.getJSON();\n");
+//    	result.append("    }\n");
+//    	return result;
+//    }
+
     private StringBuilder createOnRequestMethodRequestObject(Project project, ScreenDefinition screenDefinition, String replyClassName) throws Exception {
     	StringBuilder result = new StringBuilder();
-    	result.append("    public String onFLUIRequest(FLUIRequest request, String uploadedFileName, InputStream uploadedFileInputStream) {\n");
+    	result.append("    public FLUIAbstractReply onFLUIRequest(boolean recordMode, FLUIRequest request, String uploadedFileName, InputStream uploadedFileInputStream) throws Exception{\n");
     	result.append("        Map<String, Object> parameters = request.getParameters();\n");
     	result.append("        String action = request.getAction();\n");
+    	
+    	result.append("        StringLanguage currentLanguage = null;\n");
+    	result.append("        try{\n");
+		result.append("            currentLanguage = StringLanguage.valueOf(request.getCurrentLanguage());\n");
+		result.append("        } catch (Exception ignored){\n");
+		result.append("        }\n");
+
     	result.append("        Gson gson = new Gson();\n");
-    	result.append("        " + replyClassName + " reply = new " + replyClassName + "();\n");
+    	result.append("        " + replyClassName + " reply = new " + replyClassName + "(recordMode, currentLanguage);\n");
     	boolean first = true;
     	for (RequestToCallTranslation translation : new RequestToCallTranslationBuilder().buildTranslations(project, screenDefinition)) {
     		String prefix = "} else ";
@@ -88,10 +161,32 @@ public class JavaScreenCreatorLogic {
     		} else {
     			result.append("reply");
     		}
+    		if (translation.isKeyEventMethod()){
+    			result.append(", FLUIUtil.createFLUIKeyEvent(");
+    			result.append("gson.fromJson((String)parameters.get(\"" + GeneratorConstants.KEY_MODIFIER_PARAMETER_NAME + "\"), " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".KeyModifier.class)");
+				result.append(", ");
+				result.append("((String)parameters.get(\"" + GeneratorConstants.KEY_CHAR_PARAMETER_NAME + "\"))");
+				result.append(", ");
+				result.append("(Double)parameters.get(\"" + GeneratorConstants.KEY_CODE_PARAMETER_NAME + "\")");
+				result.append(", ");
+				result.append("((String)parameters.get(\"" + GeneratorConstants.EDITOR_TEXT_PARAMETER_NAME + "\"))");
+				result.append(", ");
+				result.append("((Double)parameters.get(\"" + GeneratorConstants.LINE_PARAMETER_NAME + "\")).intValue()");
+				result.append(", ");
+				result.append("((Double)parameters.get(\"" + GeneratorConstants.POS_IN_LINE_PARAMETER_NAME + "\")).intValue()");
+				result.append(", ");
+				result.append("((String)parameters.get(\"" + GeneratorConstants.KEY_EVENT_INFO_PARAMETER_NAME + "\"))");
+				result.append(")");
+    		}
+
     		for (ReplyToCallTranslationParameter parameter : BaseUtil.toEmptyCollectionIfNull(translation.getParameter())) {
 				result.append(", ");
     			if (parameter.getDTOClassName() != null) {
     				result.append("gson.fromJson((String)parameters.get(\"" + parameter.getKey() + "\"), " + parameter.getDTOClassName() + ".class)");
+    			} else if (parameter.getDataType() == DataType.KEY_MODIFIER){
+    				result.append("gson.fromJson((String)parameters.get(\"" + parameter.getKey() + "\"), " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".KeyModifier.class)");
+    			} else if (parameter.getDataType() == DataType.CHARACTER){
+    				result.append("((String)parameters.get(\"" + parameter.getKey() + "\")).charAt(0)");
     			} else {
     				result.append("(");
     				String suffix = "";
@@ -102,6 +197,8 @@ public class JavaScreenCreatorLogic {
     					result.append("String");
     				} else if (parameter.getDataType() == DataType.BOOLEAN) {
     					result.append("boolean");
+    				} else if (parameter.getDataType() == DataType.LIST_OF_STRING) {
+    					result.append("java.util.List<String>");
     				} else {
     					throw new Exception("Unknown parameter data type: " + parameter.getDataType());
     				}
@@ -112,11 +209,12 @@ public class JavaScreenCreatorLogic {
     		result.append(");\n");
     	}
     	result.append("        }\n");
-    	result.append("        return reply.getJSON();\n");
+    	result.append("        return reply;\n");
     	result.append("    }\n");
     	return result;
     }
 
+    
     private boolean containsDTOs(ScreenDefinition screenDefinition) {
         if (screenDefinition.getDTODeclarations() == null) {
             return false;

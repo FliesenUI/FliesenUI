@@ -3,6 +3,7 @@ package com.bright_side_it.fliesenui.validation.logic;
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
+import com.bright_side_it.fliesenui.screendefinition.dao.BasicWidgetDAO;
 import com.bright_side_it.fliesenui.screendefinition.dao.TableWidgetColumnDAO;
 import com.bright_side_it.fliesenui.screendefinition.dao.TableWidgetDAO;
 import com.bright_side_it.fliesenui.screendefinition.dao.TableWidgetItemDAO;
@@ -26,12 +27,23 @@ public class TableWidgetPropertiesValidationLogic {
 
     private void validate(Project project, ScreenDefinition screenDefinition, TableWidget table) {
         validateColumnWidthGreaterZero(project, screenDefinition, table);
+        validateColumns(project, screenDefinition, table);
         validateTotalColumnWidth(project, screenDefinition, table);
         validateColumnContent(project, screenDefinition, table);
         validateWidgetItems(project, screenDefinition, table);
     }
 
-    private void validateWidgetItems(Project project, ScreenDefinition screenDefinition, TableWidget table) {
+    private void validateColumns(Project project, ScreenDefinition screenDefinition, TableWidget table) {
+    	for (TableWidgetColumn i: BaseUtil.toEmptyCollectionIfNull(table.getColumns())){
+            if (!ValidationUtil.isTextOrTextResourceValid(project, i.getText())){
+                ValidationUtil.addError(project, screenDefinition, i.getNodePath(), TableWidgetColumnDAO.TEXT_ATTRIBUTE_NAME, ProblemType.WIDGET_TABLE_COLUMN_TEXT_STRING_RESOURCE_DOES_NOT_EXIST,
+                        "The string resource does not exist");
+            }
+    	}
+		
+	}
+
+	private void validateWidgetItems(Project project, ScreenDefinition screenDefinition, TableWidget table) {
         for (TableWidgetItem i : BaseUtil.getAllTableWidgetItemsOfType(screenDefinition, TableWidgetType.BUTTON, TableWidgetType.IMAGE_BUTTON)) {
             if (i.getID() == null) {
                 ValidationUtil.addError(project, screenDefinition, i.getNodePath(), BaseConstants.ID_ATTRIBUTE_NAME, ProblemType.WIDGET_TABLE_ITEM_MISSING_ID,
@@ -51,6 +63,13 @@ public class TableWidgetPropertiesValidationLogic {
                 ValidationUtil.addError(project, screenDefinition, i.getNodePath(), null, ProblemType.WIDGET_TABLE_ITEM_MISSING_IMAGE_SOURCE,
                         "For image table items an image source needs to be specified");
         	}
+        }
+        
+        for (TableWidgetItem i: BaseUtil.getAllTableWidgetItems(screenDefinition)){
+            if (!ValidationUtil.isTextOrTextResourceValid(project, i.getText())){
+                ValidationUtil.addError(project, screenDefinition, i.getNodePath(), TableWidgetItemDAO.TEXT_ATTRIBUTE_NAME, ProblemType.WIDGET_TABLE_ITEM_TEXT_STRING_RESOURCE_DOES_NOT_EXIST,
+                        "The string resource does not exist");
+            }
         }
 
     }

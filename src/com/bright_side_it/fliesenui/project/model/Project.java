@@ -8,6 +8,7 @@ import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
+import com.bright_side_it.fliesenui.stringres.model.StringResource;
 
 public class Project {
     private ProjectDefinition projectDefinition;
@@ -15,12 +16,14 @@ public class Project {
     private Map<String, DTODefinition> dtoDefinitionsMap;
     private Map<String, PluginDefinition> pluginDefinitionsMap;
     private Map<String, ImageAssetDefinition> imageAssetDefinitionsMap;
+    private Map<String, StringResource> stringResourceMap;
 
     private List<ResourceDefinitionProblem> projectDefinitionProblems;
     private Map<String, List<ResourceDefinitionProblem>> screenDefinitionProblemsMap;
     private Map<String, List<ResourceDefinitionProblem>> dtoDefinitionProblemsMap;
     private Map<String, List<ResourceDefinitionProblem>> pluginDefinitionProblemsMap;
     private Map<String, ResourceDefinitionProblem> imageAssetDefinitionProblemsMap;
+    private Map<String, List<ResourceDefinitionProblem>> stringResourceProblemsMap;
 
     public ProjectDefinition getProjectDefinition() {
         return projectDefinition;
@@ -101,5 +104,21 @@ public class Project {
     public void setImageAssetDefinitionProblemsMap(Map<String, ResourceDefinitionProblem> imageAssetDefinitionProblemsMap) {
         this.imageAssetDefinitionProblemsMap = imageAssetDefinitionProblemsMap;
     }
+
+	public Map<String, StringResource> getStringResourceMap() {
+		return stringResourceMap;
+	}
+
+	public void setStringResourceMap(Map<String, StringResource> stringResourceMap) {
+		this.stringResourceMap = stringResourceMap;
+	}
+
+	public Map<String, List<ResourceDefinitionProblem>> getStringResourceProblemsMap() {
+		return stringResourceProblemsMap;
+	}
+
+	public void setStringResourceProblemsMap(Map<String, List<ResourceDefinitionProblem>> stringResourceProblemsMap) {
+		this.stringResourceProblemsMap = stringResourceProblemsMap;
+	}
 
 }

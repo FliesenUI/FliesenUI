@@ -3,7 +3,7 @@
 	<taskdef resource="proguard/ant/task.properties"
 	         classpath="C:/PortablePrograms/Proguard/proguard5.2.1/lib/proguard.jar" />
 	
-    <property name="version" value="01_00_00"/>
+    <property name="version" value="01_01_02"/>
     <property name="dir.buildfile" value="."/>
     <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
     <property name="file.jarfile" value="${dir.jarfile}/FliesenUI_v${version}.jar"/>
@@ -14,7 +14,7 @@
                 <attribute name="Main-Class" value="com.bright_side_it.fliesenui.base.cli.FLUICommandLineInterface"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="${dir.buildfile}/bin" excludes="**/*Test*.class"/>
+            <fileset dir="${dir.buildfile}/bin" excludes="**/*Test.class"/>
             <zipfileset excludes="META-INF/*.SF" src="libs/gson-2.4.jar"/>
         </jar>
     </target>

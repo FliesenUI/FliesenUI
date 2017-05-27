@@ -8,18 +8,19 @@ import com.bright_side_it.fliesenui.base.util.FileUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.generator.logic.JSGetClientPropertiesFunctionCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JSOpenScreenFunctionsCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JSStringResourceFunctionsCreatorLogic;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.logic.DefinitionResourceLogic;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.project.model.Project;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 
 public class SinglePageAppHTMLGeneratorService {
 
-    public void generateHTML(Project project, Set<DefinitionResource> upToDateResources, File dir) throws Exception {
+    public void generateHTML(Project project, Set<ProjectResource> upToDateResources, File dir) throws Exception {
         for (BrowserType browserType : BaseConstants.BrowserType.values()) {
             if (generationNeeded(project, upToDateResources, browserType)) {
                 generateHTML(project, browserType, dir);
@@ -27,7 +28,7 @@ public class SinglePageAppHTMLGeneratorService {
         }
     }
 
-    private boolean generationNeeded(Project project, Set<DefinitionResource> upToDateResources, BrowserType browserType) {
+    private boolean generationNeeded(Project project, Set<ProjectResource> upToDateResources, BrowserType browserType) {
         DefinitionResourceLogic logic = new DefinitionResourceLogic();
         for (ScreenDefinition screenDefinition : project.getScreenDefinitionsMap().values()) {
             if (!upToDateResources.contains(logic.create(ResourceType.SCREEN, ResourceFormat.XML, screenDefinition.getID()))) {
@@ -48,6 +49,7 @@ public class SinglePageAppHTMLGeneratorService {
         result.append("        <link rel=\"stylesheet\" href=\"cmlib/codemirror.css\">\n");
         result.append("        <link rel=\"stylesheet\" href=\"cmlib/show-hint.css\">\n");
         result.append("        <link rel=\"stylesheet\" href=\"lib/flui.css\">\n");
+        result.append("        " + GeneratorUtil.generateHTMLJSBackButtonLogic(project, browserType, null) + "\n");
         result.append("    </head>\n");
         result.append("    <body ng-app=\"app\">\n");
         result.append("        <script src=\"lib/angular.min.js\"></script>\n");
@@ -56,6 +58,7 @@ public class SinglePageAppHTMLGeneratorService {
         result.append("        <script src=\"lib/angular-messages.min.js\"></script>\n");
         result.append("        <script src=\"lib/angular-material.min.js\"></script>\n");
         result.append("        <script src=\"lib/showdown.min.js\"></script>\n");
+        result.append("        <script src=\"lib/strings.js\"></script>\n");
         result.append("        <script src=\"cmlib/codemirror.js\"></script>\n");
         result.append("        <script src=\"cmlib/xml.js\"></script>\n");
         result.append("        <script src=\"cmlib/active-line.js\"></script>\n");
@@ -64,10 +67,12 @@ public class SinglePageAppHTMLGeneratorService {
         result.append("        <script src=\"cmlib/matchtags.js\"></script>\n");
         result.append("        <script src=\"cmlib/xml-fold.js\"></script>\n");
         result.append("        <script src=\"cmlib/show-hint.js\"></script>\n");
+        result.append("        <script src=\"lib/flui-util.js\"></script>\n");
         result.append("        " + GeneratorUtil.generateHTMLJSText(project, browserType, true) + "\n");
         result.append("        <script type=\"text/javascript\">\n");
         result.append("            " + new JSOpenScreenFunctionsCreatorLogic().createOpenScreenSinglePageApp(project).toString().replace("\n", "\n            ") + "\n");
-        result.append("            " + new JSGetClientPropertiesFunctionCreatorLogic().createGetClientPropertiesFunction(browserType).toString().replace("\n", "\n            ") + "\n");
+        result.append("            " + new JSGetClientPropertiesFunctionCreatorLogic().createGetClientPropertiesFunction(browserType).toString().replace("\n", "\n            ") + "\n\n");
+        result.append("            " + new JSStringResourceFunctionsCreatorLogic().createStringResourceFunctions().toString().replace("\n", "\n            ") + "\n");
         result.append("        </script>\n");
         result.append("        " + GeneratorConstants.BOX_1_CM_HTML + "\n");
         

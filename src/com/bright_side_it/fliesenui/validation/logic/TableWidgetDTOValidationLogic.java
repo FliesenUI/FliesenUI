@@ -163,10 +163,10 @@ public class TableWidgetDTOValidationLogic {
             ValidationUtil.addError(project, screenDefinition, table.getNodePath(), TableWidgetDAO.ID_DTO_FIELD_ATTRIBUTE_NAME,
                     ProblemType.WIDGET_TABLE_ID_DTO_FIELD_DOES_NOT_EXIST,
                     "Table uses unknonwn id field '" + table.getIDDTOField() + "' which does not exist in DTO type '" + dtoClassUsedInTableRows.getID() + "'");
-        } else if (!isTypeAndNotListOf(idField, BasicType.STRING, BasicType.LONG)) {
+        } else if (!isTypeAndNotListOf(idField, BasicType.STRING)) {
             ValidationUtil.addError(project, screenDefinition, table.getNodePath(), TableWidgetDAO.ID_DTO_FIELD_ATTRIBUTE_NAME,
                     ProblemType.WIDGET_TABLE_ID_DTO_FIELD_HAS_WRONG_TYPE, "Table uses id field '" + table.getIDDTOField() + "' which is of type '" + toTypeLabel(idField)
-                            + "', but needs to be string or long and may not be a list");
+                            + "', but needs to be string and may not be a list");
         }
     }
 

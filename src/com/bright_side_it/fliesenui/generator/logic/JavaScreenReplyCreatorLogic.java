@@ -3,8 +3,6 @@ package com.bright_side_it.fliesenui.generator.logic;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.FileUtil;
@@ -17,6 +15,7 @@ import com.bright_side_it.fliesenui.plugin.model.PluginVariable;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.SharedReplyInterface;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSource;
@@ -26,8 +25,8 @@ import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
+import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.Timer;
-import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 
 public class JavaScreenReplyCreatorLogic {
 	
@@ -76,13 +75,20 @@ public class JavaScreenReplyCreatorLogic {
 
         result.append("package " + GeneratorConstants.GENERATED_SCREEN_PACKAGE_NAME + ";\n");
         result.append("\n");
-        result.append("import java.util.List;");
+        result.append("import java.util.List;\n");
+        result.append("import java.util.Collection;\n");
+        result.append("import java.util.TreeSet;\n");
         result.append("\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAbstractReply;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIUtil;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIString.StringLanguage;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".TextHighlighting;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".CursorPos;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".ContextAssist;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelImageAssetList;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelList;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIReplyAction.ReplyActionType;\n");
+        
         if (imageAssetsExist(project)) {
             result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIImageAssets.ImageAsset;\n");
         }
@@ -90,6 +96,10 @@ public class JavaScreenReplyCreatorLogic {
         result.append(createDTOImportStatements(project, screenDefinition));
         result.append("\n");
         result.append("public class " + className + " extends FLUIAbstractReply" + generateImplementsStatements(project, screenDefinition) + " {\n");
+		result.append("    public " + className + "(boolean recordMode, StringLanguage currentLanguage) {\n");
+		result.append("        super(recordMode, currentLanguage);\n");
+		result.append("    }\n");
+		result.append("\n");
         result.append("    protected String getJSON() {\n");
         result.append("        return gson.toJson(replyDTO);\n");
         result.append("    }\n");
@@ -98,6 +108,7 @@ public class JavaScreenReplyCreatorLogic {
         result.append(createDTOSetterMethods(screenDefinition, signatures));
         result.append(createCodeEditorSetterMethods(screenDefinition, signatures));
         result.append(createSelectBoxMethods(screenDefinition, signatures));
+        result.append(createTableMethods(screenDefinition, signatures));
         result.append(createOpenScreenMethods(project, signatures));
         result.append("}");
 
@@ -130,10 +141,16 @@ public class JavaScreenReplyCreatorLogic {
     	signatures.add("public void setInfoDialog(String title, String text) {");
     	signatures.add("public void setErrorDialog(String title, String text) {");
     	signatures.add("public void setInfoToast(String text) {");
+    	signatures.add("public void setLanguage(StringLanguage language) {");
+    	signatures.add("public StringLanguage getCurrentLanguage() {");
     	signatures.add("public void openURL(String url, boolean openInNewWindow) {");
     	signatures.add("public void downloadFile(String fileStreamID){");
     	signatures.add("public void showInputDialog(String referenceID, String title, String textContent, String label, String initialValueText, String okText, String cancelText) {");
     	signatures.add("public void showConfirmDialog(String referenceID, String title, String textContent, String okText, String cancelText) {");
+		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelImageAssetList items, Collection<String> selectedIDs){");
+		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelList items, Collection<String> selectedIDs){");
+		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelImageAssetList items, Collection<String> selectedIDs){");
+		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelList items, Collection<String> selectedIDs){");
 	}
 
 	private StringBuilder createOpenScreenMethods(Project project, List<String> signatures) {
@@ -145,14 +162,19 @@ public class JavaScreenReplyCreatorLogic {
                 DTODefinition definition = project.getDTODefinitionsMap().get(declaration.getType());
                 parameterString = GeneratorUtil.getDTOClassName(definition) + " " + i.getParameterDTOID();
             }
-            appendAndAdd(result, signatures, "    public void openScreen" + BaseUtil.idToFirstCharUpperCase(i.getID()) + "(" + parameterString + ") {\n");
-//            result.append("        String url = \"" + GeneratorUtil.createHTMLFilenameWithBrowserTypePlaceholder(i) + "\";\n");
+            String methodName = "openScreen" + BaseUtil.idToFirstCharUpperCase(i.getID());
+            appendAndAdd(result, signatures, "    public void " + methodName + "(" + parameterString + ") {\n");
             if (i.getParameterDTOID() != null) {
-                //        		result.append("        url += \"?" + GeneratorConstants.SCREEN_PARAMETER_DTO_GET_NAME + "=\" + FLUIUtil.toURLParameter(" + i.getParameterDTOID() + ");\n");
                 result.append("        replyDTO.setOpenParameter(" + i.getParameterDTOID() + ");\n");
             }
-            //        	result.append("        replyDTO.setScreenURLToOpen(url);\n");
             result.append("        replyDTO.setScreenToOpen(\"" + i.getID() + "\");\n");
+            result.append("        if (recordMode){\n");
+            if (parameterString.isEmpty()){
+            	result.append("            addRecordedAction(ReplyActionType.OPEN_SCREEN, \"" + methodName + "(\");\n");
+            } else {
+            	result.append("            addRecordedAction(ReplyActionType.OPEN_SCREEN, \"" + methodName + "(\", gson.toJson(" + i.getParameterDTOID() + "), getClassName(" + i.getParameterDTOID() + "));\n");
+            }
+            result.append("        }\n");
             result.append("    }\n");
             result.append("\n");
         }
@@ -168,7 +190,6 @@ public class JavaScreenReplyCreatorLogic {
     private StringBuilder createDTOImportStatements(Project project, ScreenDefinition screenDefinition) {
         StringBuilder result = new StringBuilder();
         for (String i : GeneratorUtil.getRequiredDTOClassNames(project, screenDefinition)) {
-            //        	log("createDTOImportStatements. DTO class = " + i);
             result.append("import " + GeneratorConstants.GENERATED_DTO_PACKAGE_NAME + "." + i + ";\n");
         }
         return result;
@@ -200,6 +221,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("            replyDTO.getDTOValues().remove(\"" + dtoDeclaration.getID() + "\");\n");
         result.append("        } else {\n");
         result.append("            replyDTO.getDTOValues().put(\"" + dtoDeclaration.getID() + "\", dto);\n");
+        result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(ReplyActionType.SET_DTO, \"" + javaSetterMethodName + "(\", gson.toJson(dto), getClassName(dto));\n");
         result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
@@ -274,37 +298,72 @@ public class JavaScreenReplyCreatorLogic {
 
         String javaScriptVariableName = GeneratorUtil.getJSImageSourceVariableName(screenDefinition, basicWidget);
         if (imageSource.getImageAssetID() != null) {
-        	appendAndAdd(result, signatures, "    public void set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageAsset(ImageAsset imageAsset) {\n");
+        	String methodName = "set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageAsset";
+        	appendAndAdd(result, signatures, "    public void " + methodName + "(ImageAsset imageAsset) {\n");
             result.append("        replyDTO.getVariablesToSet().add(\"" + javaScriptVariableName + "\");\n");
             result.append("        replyDTO.getVariableValues().put(\"" + javaScriptVariableName + "\", imageAsset.getFilename());\n");
+            result.append("        if (recordMode){\n");
+            result.append("            addRecordedAction(ReplyActionType.SET_IMAGE_ASSET, \"" + methodName + "(\", imageAsset);\n");
+            result.append("        }\n");
             result.append("    }\n");
             result.append("\n");
         } else if (imageSource.getImageStreamID() != null) {
-        	appendAndAdd(result, signatures, "    public void set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageStreamID(String imageStreamID) {\n");
+        	String methodName = "set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageStreamID";
+        	appendAndAdd(result, signatures, "    public void " + methodName + "(String imageStreamID) {\n");
             result.append("        replyDTO.getVariablesToSet().add(\"" + javaScriptVariableName + "\");\n");
             result.append("        replyDTO.getVariableValues().put(\"" + javaScriptVariableName + "\", imageStreamID);\n");
+            result.append("        if (recordMode){\n");
+            result.append("            addRecordedAction(\"" + methodName + "(\" + escapeString(imageStreamID) + \");\");\n");
+            result.append("        }\n");
             result.append("    }\n");
             result.append("\n");
         } else if (imageSource.getImageURL() != null) {
-        	appendAndAdd(result, signatures, "    public void set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageURL(String imageURL) {\n");
+        	String methodName = "set" + BaseUtil.idToFirstCharUpperCase(basicWidget.getID()) + "ImageURL";
+        	appendAndAdd(result, signatures, "    public void " + methodName + "(String imageURL) {\n");
             result.append("        replyDTO.getVariablesToSet().add(\"" + javaScriptVariableName + "\");\n");
             result.append("        replyDTO.getVariableValues().put(\"" + javaScriptVariableName + "\", imageURL);\n");
+            result.append("        if (recordMode){\n");
+            result.append("            addRecordedAction(\"" + methodName + "(\" + escapeString(imageURL) + \");\");\n");
+            result.append("        }\n");
             result.append("    }\n");
             result.append("\n");
         }
-
+    }
+    
+    private StringBuilder createTableMethods(ScreenDefinition screenDefinition, List<String> signatures) {
+    	StringBuilder result = new StringBuilder();
+    	for (TableWidget i: BaseUtil.getAllTableWidgets(screenDefinition)){
+    		if (i.isRowCheckboxes()){
+        		String methodName = "set" + BaseUtil.idToFirstCharUpperCase(i.getID()) + "CheckedRowIDs";
+        		appendAndAdd(result, signatures, "    public void " + methodName + "(Collection<String> checkedIDs) {\n");
+        		String variableName = GeneratorUtil.createJSTableRowCheckedIDVariableName(screenDefinition, i);
+    			result.append("        if (checkedIDs == null){\n");
+    			result.append("            replyDTO.getTableCheckedRowIDs().put(\"" + variableName + "\", new TreeSet<>());\n");
+    			result.append("        } else {\n");
+    			result.append("            replyDTO.getTableCheckedRowIDs().put(\"" + variableName + "\", new TreeSet<>(checkedIDs));\n");
+    			result.append("        }\n");
+    			result.append("        if (recordMode){\n");
+    			result.append("            addRecordedAction(ReplyActionType.SET_TABLE_CHECKED_ROW_IDS, \"" + methodName + "(\", checkedIDs);\n");
+    			result.append("        }\n");
+        		result.append("    }\n");
+    		}
+    	}
+    	return result;
     }
 
     private StringBuilder createSelectBoxMethods(ScreenDefinition screenDefinition, List<String> signatures) {
     	StringBuilder result = new StringBuilder();
     	for (SelectBox i: BaseUtil.getAllSelectBoxes(screenDefinition)){
-    		appendAndAdd(result, signatures, "    public void set" + BaseUtil.idToFirstCharUpperCase(i.getID()) + "SelectedID(String selectedID) {\n");
+    		String methodName = "set" + BaseUtil.idToFirstCharUpperCase(i.getID()) + "SelectedID";
+    		appendAndAdd(result, signatures, "    public void " + methodName + "(String selectedID) {\n");
     		result.append("        replyDTO.getSelectBoxSelectedIDs().put(\"" + GeneratorUtil.getJSSelectBoxSelectedItemVariableName(screenDefinition, i) + "\", selectedID);\n");
+            result.append("        if (recordMode){\n");
+            result.append("            addRecordedAction(\"" + methodName + "(\" + escapeString(selectedID) + \");\");\n");
+            result.append("        }\n");
     		result.append("    }\n");
     	}
     	return result;
     }
-
 
     private StringBuilder createCodeEditorSetterMethods(ScreenDefinition screenDefinition, List<String> signatures) {
         StringBuilder result = new StringBuilder();
@@ -326,6 +385,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        cursorPos.setLine(line);\n");
         result.append("        cursorPos.setPosInLine(posInLine);\n");
         result.append("        replyDTO.getCursorPosValues().put(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\", cursorPos);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + line + \", \" + posInLine + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -336,8 +398,10 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        if (highlightings == null) {\n");
         result.append("            replyDTO.getTextHighlighting().remove(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\");\n");
         result.append("        } else {\n");
-        result.append(
-                "            replyDTO.getTextHighlighting().put(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\", highlightings);\n");
+        result.append("            replyDTO.getTextHighlighting().put(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\", highlightings);\n");
+        result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(ReplyActionType.SET_HIGHLIGHTINGS, \"" + javaSetterMethodName + "(\", highlightings);\n");
         result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
@@ -351,6 +415,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        } else {\n");
         result.append("            replyDTO.getContextAssists().put(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\", contextAssist);\n");
         result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(ReplyActionType.SET_CONTEXT_ASSIST, \"" + javaSetterMethodName + "(\", contextAssist);\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -363,6 +430,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("            replyDTO.getObjectSetValueValues().remove(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\");\n");
         result.append("        } else {\n");
         result.append("            replyDTO.getObjectSetValueValues().put(\"" + GeneratorUtil.createCodeWidgetVariableName(screenDefinition, widget) + "\", text);\n");
+        result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(text) + \");\");\n");
         result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
@@ -381,6 +451,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("            replyDTO.getVariableValues().remove(\"" + propertyName + "\");\n");
         result.append("        } else {\n");
         result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", text);\n");
+        result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(text) + \");\");\n");
         result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
@@ -401,6 +474,9 @@ public class JavaScreenReplyCreatorLogic {
     	result.append("            replyDTO.getMarkdownViewTexts().put(\"" + widget.getID() + "\", text);\n");
         result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", text);\n");
     	result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(text) + \");\");\n");
+        result.append("        }\n");
     	result.append("    }\n");
     	result.append("\n");
     }
@@ -420,6 +496,9 @@ public class JavaScreenReplyCreatorLogic {
         appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(boolean selected) {\n");
         result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
         result.append("        replyDTO.getVariableValues().put(\"" + propertyName + "\", selected);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + selected + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -434,7 +513,10 @@ public class JavaScreenReplyCreatorLogic {
     	result.append("/** @param color background color in format '#aabbcc' or null for transparent/default */\n");
     	appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(String color) {\n");
     	result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
-    	result.append("        replyDTO.getVariableValues().put(\"" + propertyName + "\", color == null ? \"#ffffff\" : color);\n");
+    	result.append("        replyDTO.getVariableValues().put(\"" + propertyName + "\", color == null ? \"\" : \"background: \" + color);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(color) + \");\");\n");
+        result.append("        }\n");
     	result.append("    }\n");
     	result.append("\n");
     }
@@ -457,6 +539,9 @@ public class JavaScreenReplyCreatorLogic {
             result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", value);\n");
             result.append("        }\n");
         }
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + value + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -471,22 +556,12 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        } else {\n");
         result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", \"determinate\");\n");
         result.append("        }\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + indeterminate + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
-
-    //    private void createVisibleSetter(StringBuilder result, BasicWidget widget) {
-    //        if (widget.getID() == null) {
-    //            return;
-    //        }
-    //        String javaSetterMethodName = BaseUtil.buildIDWithPrefix(widget.getID() + "Visible", "set");
-    //        String propertyName = GeneratorUtil.getJavascriptWidgetVisibleVariableName(widget);
-    //        result.append("    public void " + javaSetterMethodName + "(boolean visible) {\n");
-    //        result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
-    //        result.append("        replyDTO.getVariableValues().put(\"" + propertyName + "\", visible);\n");
-    //        result.append("    }\n");
-    //        result.append("\n");
-    //    }
 
     private void createVisibleSetter(StringBuilder result, ScreenDefinition screenDefinition, String id, List<String> signatures) {
         if (id == null) {
@@ -497,6 +572,9 @@ public class JavaScreenReplyCreatorLogic {
         appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(boolean visible) {\n");
         result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
         result.append("        replyDTO.getVariableValues().put(\"" + propertyName + "\", visible);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + visible + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -510,6 +588,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        replyDTO.getVariableValues().put(\"" + progressPropertyName + "\", \"\" + value);\n");
         result.append("        replyDTO.getVariablesToSet().add(\"" + propertyIndeterminateName + "\");\n");
         result.append("        replyDTO.getVariableValues().put(\"" + propertyIndeterminateName + "\", \"determinate\");\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + value + \");\");\n");
+        result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
     }
@@ -520,6 +601,9 @@ public class JavaScreenReplyCreatorLogic {
     	appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(boolean active) {\n");
     	result.append("        replyDTO.getVariablesToSet().add(\"" + progressPropertyName + "\");\n");
     	result.append("        replyDTO.getVariableValues().put(\"" + progressPropertyName + "\", active);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + active + \");\");\n");
+        result.append("        }\n");
     	result.append("    }\n");
     	result.append("\n");
     }

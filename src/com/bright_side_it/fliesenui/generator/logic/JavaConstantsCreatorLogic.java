@@ -61,9 +61,10 @@ public class JavaConstantsCreatorLogic {
 	private StringBuilder createImageAssetsEnum(Project project) {
         StringBuilder result = new StringBuilder();
         
-        if (BaseUtil.toEmptyMapIfNull(project.getImageAssetDefinitionsMap()).isEmpty()){
-        	return result;
-        }
+//        if (BaseUtil.toEmptyMapIfNull(project.getImageAssetDefinitionsMap()).isEmpty()){
+//        	result.append("public enum " + GeneratorConstants.IMAGE_ASSET_ENUM_NAME + " {}\n");
+//        	return result;
+//        }
         
         result.append("\n");
         result.append("public enum " + GeneratorConstants.IMAGE_ASSET_ENUM_NAME + " {\n");

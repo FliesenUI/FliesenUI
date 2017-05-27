@@ -16,13 +16,14 @@ import java.util.Arrays;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
+import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.screendefinition.dao.BasicWidgetDAO;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
-import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.Style;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
+import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
 public class BasicWidgetValidationLogic {
@@ -95,6 +96,16 @@ public class BasicWidgetValidationLogic {
                         "No such DTO field: '" + widget.getTextDTOField() + "'");
         	}
         }
+        
+        if (!ValidationUtil.isTextOrTextResourceValid(project, widget.getLabelText())){
+            ValidationUtil.addError(project, screenDefinition, widget.getNodePath(), BasicWidgetDAO.LABEL_TEXT_ATTRIBUTE_NAME, ProblemType.BASIC_WIDGET_LABEL_TEXT_STRING_RESOURCE_DOES_NOT_EXIST,
+                    "The string resource does not exist");
+        }
+        if (!ValidationUtil.isTextOrTextResourceValid(project, widget.getText())){
+            ValidationUtil.addError(project, screenDefinition, widget.getNodePath(), BasicWidgetDAO.TEXT_ATTRIBUTE_NAME, ProblemType.BASIC_WIDGET_TEXT_STRING_RESOURCE_DOES_NOT_EXIST,
+                    "The string resource does not exist");
+        }
+        
     }
     
     private void validateAttributeMustExists(Project project, ScreenDefinition screenDefinition, BasicWidget widget, String attributeName, Object value,

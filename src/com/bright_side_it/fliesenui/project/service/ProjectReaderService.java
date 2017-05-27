@@ -18,17 +18,20 @@ import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.dao.PluginDefinitionDAO;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinitionDAOResult;
-import com.bright_side_it.fliesenui.project.dao.DefinitionResourceDAO;
+import com.bright_side_it.fliesenui.project.dao.ProjectResourceDAO;
 import com.bright_side_it.fliesenui.project.dao.ProjectDefinitionDAO;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectDefinitionDAOResult;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
 import com.bright_side_it.fliesenui.screendefinition.dao.ScreenDefinitionDAO;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
+import com.bright_side_it.fliesenui.stringres.dao.StringResourceDAO;
+import com.bright_side_it.fliesenui.stringres.model.StringResource;
+import com.bright_side_it.fliesenui.stringres.model.StringResourceDAOResult;
 
 public class ProjectReaderService {
 
@@ -40,10 +43,10 @@ public class ProjectReaderService {
      * @return
      * @throws Exception
      */
-    public Project readProject(File baseDir, Project lastReadProject, Set<DefinitionResource> upToDateResources) throws Exception {
+    public Project readProject(File baseDir, Project lastReadProject, Set<ProjectResource> upToDateResources) throws Exception {
         Project result = null;
 
-        Set<DefinitionResource> useUpToDateResources = upToDateResources;
+        Set<ProjectResource> useUpToDateResources = upToDateResources;
         if (useUpToDateResources == null) {
             useUpToDateResources = new TreeSet<>();
         }
@@ -59,6 +62,8 @@ public class ProjectReaderService {
             result.setPluginDefinitionProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
             result.setImageAssetDefinitionsMap(new TreeMap<>());
             result.setImageAssetDefinitionProblemsMap(new TreeMap<String, ResourceDefinitionProblem>());
+            result.setStringResourceMap(new TreeMap<String, StringResource>());
+            result.setStringResourceProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
             useUpToDateResources = new TreeSet<>();
         }
 
@@ -67,11 +72,12 @@ public class ProjectReaderService {
         readImageAssetDefinitions(baseDir, useUpToDateResources, result);
         readDTODefinitions(baseDir, useUpToDateResources, result);
         readScreenDefinitions(baseDir, useUpToDateResources, result);
+        readStringResources(baseDir, useUpToDateResources, result);
 
         return result;
     }
 
-    public List<File> getAllDTOFiles(File dir) throws Exception {
+	public List<File> getAllDTOFiles(File dir) throws Exception {
         File itemDir = new File(dir, BaseConstants.DTO_DIR_NAME);
         if (!itemDir.exists()) {
             return new ArrayList<File>();
@@ -111,13 +117,13 @@ public class ProjectReaderService {
     	return result;
     }
     
-    private void readPluginDefinitions(File dir, Set<DefinitionResource> upToDateResources, Project result) throws Exception {
-        DefinitionResourceDAO definitionResourceDAO = new DefinitionResourceDAO();
+    private void readPluginDefinitions(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
         Set<String> existingIDs = new TreeSet<String>();
 
-        for (DefinitionResource i : definitionResourceDAO.getAllPlugins(dir)) {
+        for (ProjectResource i : definitionResourceDAO.getAllPlugins(dir)) {
             if (!upToDateResources.contains(i)) {
-                File file = definitionResourceDAO.getFile(dir, i);
+                File file = definitionResourceDAO.getFile(dir, result.getProjectDefinition(), i);
                 PluginDefinitionDAOResult readResult = new PluginDefinitionDAO().readPluginDefinition(file);
                 if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
                     result.getPluginDefinitionProblemsMap().put(i.getId(), readResult.getProblems());
@@ -137,14 +143,56 @@ public class ProjectReaderService {
             result.getPluginDefinitionsMap().remove(i);
         }
     }
+    
+    private void readStringResources(File baseDir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
+        Set<String> existingIDs = new TreeSet<String>();
+        
+        if (result.getProjectDefinition() == null){
+        	return;
+        }
+        for (ProjectResource i : definitionResourceDAO.getAllStringResources(baseDir, result.getProjectDefinition())) {
+            if (!upToDateResources.contains(i)) {
+                File file = definitionResourceDAO.getFile(baseDir, result.getProjectDefinition(), i);
+                try {
+                	StringResourceDAOResult readResult = new StringResourceDAO().readStringResource(file, i.getId());
+                    if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
+                        result.getStringResourceProblemsMap().put(i.getId(), readResult.getProblems());
+                    }
+                    StringResource stringResource = readResult.getStringResource();
+                    if (stringResource != null) {
+                        result.getStringResourceMap().put(i.getId(), stringResource);
+                    }
+                } catch (Exception e) {
+                    ResourceDefinitionProblem problem = new ResourceDefinitionProblem();
+                    if ((e != null) && (e.getMessage() != null)) {
+                        problem.setMessage("Error: " + e.getMessage());
+                    } else {
+                        problem.setMessage("Error: " + e);
+                    }
+                    result.getStringResourceProblemsMap().put(i.getId(), Collections.singletonList(problem));
+                }
+            }
+            existingIDs.add(i.getId());
+        }
 
-    private void readImageAssetDefinitions(File dir, Set<DefinitionResource> upToDateResources, Project result) throws Exception {
-        DefinitionResourceDAO definitionResourceDAO = new DefinitionResourceDAO();
+        Set<String> deletedIDs = new TreeSet<>(result.getStringResourceMap().keySet());
+        deletedIDs.removeAll(existingIDs);
+
+        for (String i : deletedIDs) {
+            result.getStringResourceProblemsMap().remove(i);
+            result.getStringResourceMap().remove(i);
+        }
+
+	}
+
+    private void readImageAssetDefinitions(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
         Set<String> existingIDs = new TreeSet<String>();
 
-        for (DefinitionResource i : definitionResourceDAO.getAllImageAssets(dir)) {
+        for (ProjectResource i : definitionResourceDAO.getAllImageAssets(dir)) {
             if (!upToDateResources.contains(i)) {
-                File file = definitionResourceDAO.getFile(dir, i);
+                File file = definitionResourceDAO.getFile(dir, result.getProjectDefinition(), i);
                 ImageAssetDefinition imageAssetDefinition = null;
                 try {
                     imageAssetDefinition = new ImageAssetDefinitionDAO().readImageAssetDefinition(file);
@@ -174,13 +222,13 @@ public class ProjectReaderService {
 
     }
 
-    private void readDTODefinitions(File dir, Set<DefinitionResource> upToDateResources, Project result) throws Exception {
-        DefinitionResourceDAO definitionResourceDAO = new DefinitionResourceDAO();
+    private void readDTODefinitions(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
         Set<String> existingIDs = new TreeSet<String>();
 
-        for (DefinitionResource i : definitionResourceDAO.getAllDTOs(dir)) {
+        for (ProjectResource i : definitionResourceDAO.getAllDTOs(dir)) {
             if (!upToDateResources.contains(i)) {
-                File file = definitionResourceDAO.getFile(dir, i);
+                File file = definitionResourceDAO.getFile(dir, result.getProjectDefinition(), i);
                 DTODefinitionDAOResult readResult = new DTODefinitionDAO().readDTODefinition(file);
                 if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
                     result.getDTODefinitionProblemsMap().put(i.getId(), readResult.getProblems());
@@ -226,12 +274,12 @@ public class ProjectReaderService {
         //        }
     }
 
-    private void readScreenDefinitions(File dir, Set<DefinitionResource> upToDateResources, Project result) throws Exception {
-        DefinitionResourceDAO definitionResourceDAO = new DefinitionResourceDAO();
+    private void readScreenDefinitions(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
         Set<String> existingIDs = new TreeSet<String>();
-        for (DefinitionResource i : definitionResourceDAO.getAllScreens(dir)) {
+        for (ProjectResource i : definitionResourceDAO.getAllScreens(dir)) {
             if (!upToDateResources.contains(i)) {
-                File file = definitionResourceDAO.getFile(dir, i);
+                File file = definitionResourceDAO.getFile(dir, result.getProjectDefinition(), i);
                 ScreenDefinitionDAOResult readResult = new ScreenDefinitionDAO().readScreenDefiontion(file);
                 if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
                     result.getScreenDefinitionProblemsMap().put(i.getId(), readResult.getProblems());
@@ -271,8 +319,8 @@ public class ProjectReaderService {
         return new File(dir, BaseConstants.PROJECT_FILE_NAME);
     }
 
-    private void readProjectDefinition(File dir, Set<DefinitionResource> upToDateResources, Project project) throws Exception {
-        DefinitionResource resource = new DefinitionResource();
+    private void readProjectDefinition(File dir, Set<ProjectResource> upToDateResources, Project project) throws Exception {
+        ProjectResource resource = new ProjectResource();
         resource.setId("");
         resource.setResourceType(ResourceType.PROJECT);
         resource.setResourceFormat(ResourceFormat.XML);

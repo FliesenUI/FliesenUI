@@ -5,6 +5,7 @@ import java.util.Map;
 public class FLUIRequest {
     private String screenID;
     private String action;
+    private String currentLanguage;
     private Map<String, Object> parameters;
 
     public String getAction() {
@@ -31,4 +32,12 @@ public class FLUIRequest {
         this.screenID = screenID;
     }
 
+	public String getCurrentLanguage() {
+		return currentLanguage;
+	}
+
+	public void setCurrentLanguage(String currentLanguage) {
+		this.currentLanguage = currentLanguage;
+	}
+    
 }

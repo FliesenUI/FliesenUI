@@ -7,6 +7,7 @@ public class RequestToCallTranslation {
     private List<ReplyToCallTranslationParameter> parameter;
     private String methodName;
     private boolean fileUploadMethod;
+    private boolean keyEventMethod;
     
     public String getActionName() {
         return actionName;
@@ -38,6 +39,14 @@ public class RequestToCallTranslation {
 
 	public void setFileUploadMethod(boolean fileUploadMethod) {
 		this.fileUploadMethod = fileUploadMethod;
+	}
+
+	public boolean isKeyEventMethod() {
+		return keyEventMethod;
+	}
+
+	public void setKeyEventMethod(boolean keyEventMethod) {
+		this.keyEventMethod = keyEventMethod;
 	}
 
 }

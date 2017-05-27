@@ -41,6 +41,7 @@ public class ProjectDefinitionDAO {
     public static final String THEME_WARN_PALETTE_ATTRIBUTE_NAME = "themeWarnPalette";
     public static final String MARGIN_ATTRIBUTE_NAME = "margin";
     public static final String START_SCREEN_ID_ATTRIBUTE_NAME = "startScreenID";
+    public static final String STRING_RESOURCE_DIR_ATTRIBUTE_NAME = "stringResourceDir";
 
     /**
      * possible colors themes (https://material.google.com/style/color.html#color-color-palette):
@@ -94,6 +95,7 @@ public class ProjectDefinitionDAO {
         result.getProjectDefinition().setThemeWarnPalette(XMLUtil.getStringAttributeRequired(root, THEME_WARN_PALETTE_ATTRIBUTE_NAME));
         result.getProjectDefinition().setTitle(XMLUtil.getStringAttributeRequired(root, TITLE_ATTRIBUTE_NAME));
         result.getProjectDefinition().setMargin(XMLUtil.getIntAttributeRequired(root, MARGIN_ATTRIBUTE_NAME));
+        result.getProjectDefinition().setStringResourceDir(XMLUtil.getStringAttributeOptional(root, STRING_RESOURCE_DIR_ATTRIBUTE_NAME, null));
 
         
         int nodeIndex = 0;
@@ -177,6 +179,7 @@ public class ProjectDefinitionDAO {
         result.add(BaseUtil.createAssistValue(true, TITLE_ATTRIBUTE_NAME, "Project title"));
         result.add(BaseUtil.createAssistValue(true, FORMAT_VERSION_ATTRIBUTE_NAME, "format version of this FliesenUI project"));
         result.add(BaseUtil.createAssistValue(true, START_SCREEN_ID_ATTRIBUTE_NAME, "ID of the start screen (screen that is shown when the application starts)"));
+        result.add(BaseUtil.createAssistValue(false, STRING_RESOURCE_DIR_ATTRIBUTE_NAME, "External directory that contains the string resources in an Android(!) project format. Example: \"C:\\myAndroidProject\\app\\src\\main\\res\""));
         result.add(BaseUtil.createAssistValue(false, DARK_THEME_ATTRIBUTE_NAME, "dark theme: true/false"));
         result.add(BaseUtil.createAssistValue(true, THEME_PRIMARY_PALETTE_ATTRIBUTE_NAME, "primary palette"));
         result.add(BaseUtil.createAssistValue(true, THEME_ACCENT_PALETTE_ATTRIBUTE_NAME, "accent palette"));

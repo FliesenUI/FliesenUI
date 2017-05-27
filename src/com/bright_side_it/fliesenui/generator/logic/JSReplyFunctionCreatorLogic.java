@@ -8,6 +8,7 @@ import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
+import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 
 public class JSReplyFunctionCreatorLogic {
@@ -15,7 +16,10 @@ public class JSReplyFunctionCreatorLogic {
         StringBuilder result = new StringBuilder();
         result.append(screenIDPrefix + "processReply = function(jsonString){\n");
         result.append("    var reply = JSON.parse(jsonString);\n");
-        result.append("    var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+		result.append("    if (typeof reply.languageToSet != \"undefined\") {\n");
+		result.append("        currentLanguage = reply.languageToSet;\n");
+		result.append("    }\n");
+		result.append("    var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
         result.append("    for (i = 0, len = reply.dtosToSet.length; i < len; i++) {\n");
         result.append("        var dtoValue = reply.dtoValues[reply.dtosToSet[i]];\n");
         result.append("        scope[reply.dtosToSet[i]] = dtoValue;\n");
@@ -24,6 +28,9 @@ public class JSReplyFunctionCreatorLogic {
                 result.append(createDTOToFieldStatementsForProcessReply(dtoDeclaration.getID(), screenDefinition));
             }
         }
+        result.append(createLogicToResetCheckTableRowsIfTheTableDTOWasUpdated(screenDefinition));
+        
+        
         result.append("    }\n");
         //: the next part also ready the DTOs and uses the variable names, but it is an iteration after the DTOs itself have been set
         //: this is required to set the selected value of a select box, since first the items (id and label) need to be set by a DTO
@@ -103,8 +110,13 @@ public class JSReplyFunctionCreatorLogic {
         result.append("        this[textEditorName].showHint({hint:function(){return hintValue;}});\n");
         result.append("    }\n");
         result.append("\n");
-
-
+		result.append("    for (key in reply.tableCheckedRowIDs){\n");
+		result.append("        scope[key] = new Object();\n");
+		result.append("        for (i in reply.tableCheckedRowIDs[key]){\n");
+		result.append("            scope[key][reply.tableCheckedRowIDs[key][i]] = true;\n");
+		result.append("        }\n");
+		result.append("    }\n");
+        result.append("\n");
         result.append("    var screenToOpen = reply.screenToOpen;\n");
         result.append("    if (typeof screenToOpen != \"undefined\") {\n");
         result.append("        " + screenIDPrefix + "openScreen(screenToOpen, reply.openParameter);\n");
@@ -148,15 +160,42 @@ public class JSReplyFunctionCreatorLogic {
         //        var hintValue = JSON.parse(jsonObject);
         //        codeEditorCodeEditor.showHint({hint:function(){return hintValue;}});
 
-
-
-        result.append("    setTimeout(function() {scope.$digest();}, 0);\n"); //: required in onLoad. Then digest needs to be called. Otherwise the fields that have been set will not be shown. However digest may not be called in the other cases where ng-onclick is used and digest is called automatically which causes conflicts. Therefore the timer-method is used which may always call digest.
+        result.append("    if (typeof reply.listChooserParameters != \"undefined\") {\n");
+		result.append("        scope.showListChooser(reply.listChooserParameters);\n");
+		result.append("    }\n");
+		//: required in onLoad. Then digest needs to be called. Otherwise the fields that have been set will not be shown. 
+		//: However digest may not be called in the other cases where ng-onclick is used and digest is called automatically 
+		//: which causes conflicts. Therefore the timer-method is used which may always call digest.
+		//: updateViews() is needed for CodeMirror editors. The method refresh() needs to be called after setText.
+        result.append("    setTimeout(function() {scope.$digest();" + screenIDPrefix + "updateViews();}, 0);\n"); 
         result.append("\n");
         result.append("};\n");
         return result;
     }
 
-    private StringBuilder createDialogMethods() {
+    private StringBuilder createLogicToResetCheckTableRowsIfTheTableDTOWasUpdated(ScreenDefinition screenDefinition) {
+        StringBuilder result = new StringBuilder();
+        for (TableWidget i: BaseUtil.getAllTableWidgets(screenDefinition)){
+        	if (i.isRowCheckboxes()){
+        		result.append("        if (reply.dtosToSet[i] == '" + getTopDTOItem(i.getDTO()) + "'){\n");
+        		String variableName = GeneratorUtil.createJSTableRowCheckedIDVariableName(screenDefinition, i);
+        		result.append("            scope." + variableName + " = new Object();\n");
+        		result.append("        }\n");
+        	}
+        }
+        
+		return result;
+	}
+
+	private String getTopDTOItem(String dtoName) {
+		int pos = dtoName.indexOf(".");
+		if (pos < 0){
+			return dtoName;
+		}
+		return dtoName.substring(0, pos);
+	}
+
+	private StringBuilder createDialogMethods() {
         StringBuilder result = new StringBuilder();
 
         result.append("    var inputDialogParameters = reply.inputDialogParameters;\n");

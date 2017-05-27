@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.FileUtil;
 import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
-import com.bright_side_it.fliesenui.project.dao.DefinitionResourceDAO;
+import com.bright_side_it.fliesenui.project.dao.ProjectResourceDAO;
 
 public class ImageAssetDefinitionDAO {
 
@@ -41,7 +41,7 @@ public class ImageAssetDefinitionDAO {
 //    }
 
     public void copyToDir(File projectDir, ImageAssetDefinition image, File destDir) throws Exception {
-        DefinitionResourceDAO definitionResourceDAO = new DefinitionResourceDAO();
+        ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
         File source = definitionResourceDAO.getImageAssetFile(projectDir, image);
         File target = new File(destDir, image.getFilename());
         Files.copy(source.toPath(), target.toPath(), REPLACE_EXISTING);

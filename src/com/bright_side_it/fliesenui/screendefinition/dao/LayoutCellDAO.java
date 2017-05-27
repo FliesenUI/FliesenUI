@@ -88,7 +88,8 @@ public class LayoutCellDAO {
         result.addAll(BasicWidgetDAO.createAssistValues());
         result.add(BaseUtil.createAssistValue(null, TableWidgetDAO.getNodeName(), "table"));
         result.add(BaseUtil.createAssistValue(null, SelectBoxDAO.getNodeName(), "select box"));
-        result.add(BaseUtil.createAssistValue(null, CodeEditorWidgetDAO.getNodeName(), "code editor"));
+        result.add(BaseUtil.createAssistValue(null, CodeEditorWidgetDAO.NODE_NAME_CODE_EDITOR, "code editor"));
+        result.add(BaseUtil.createAssistValue(null, CodeEditorWidgetDAO.NODE_NAME_TEXT_EDITOR, "text editor"));
         result.add(BaseUtil.createAssistValue(null, LayoutContainerDAO.getNodeName(), "nested layout container"));
         result.add(BaseUtil.createAssistValue(null, PluginInstanceDAO.getNodeName(), "plugin (defined in separate file)"));
 

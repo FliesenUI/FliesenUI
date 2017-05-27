@@ -30,6 +30,8 @@ public class ScreenManagerCreatorLogic {
         	result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAndroidWebView;\n");
         }
         result.append("import java.util.Map;\n");
+        result.append("import java.util.List;\n");
+        result.append("import java.util.ArrayList;\n");
         result.append("import java.util.TreeMap;\n");
         result.append("import java.io.ByteArrayOutputStream;\n");
 		result.append("import java.io.InputStream;\n");
@@ -53,6 +55,8 @@ public class ScreenManagerCreatorLogic {
         }
         result.append("    private boolean singlePageApp = true;\n");
         result.append("    private FLUIScreenManagerListener listener;\n");
+        result.append("    private boolean recording = false;\n");
+        result.append("    private FLUIActionRecording actionRecording;\n");
         result.append("    private FLUIWebCallHandler fluiWebCallHandler = new FLUIWebCallHandler(this);\n");
         result.append("    private Map<String, FLUIScreen> screenIDToViewMap = new TreeMap<String, FLUIScreen>();\n");
         result.append("\n");
@@ -120,6 +124,20 @@ public class ScreenManagerCreatorLogic {
         result.append("        this.singlePageApp = singlePageApp;\n");
         result.append("    }\n");
         result.append("\n");
+        result.append("    public void startRecording() {\n");
+        result.append("        actionRecording = new FLUIActionRecording();\n");
+        result.append("        actionRecording.setRequests(new ArrayList<FLUIRequest>());\n");
+        result.append("        actionRecording.setReplies(new ArrayList<FLUIReplyDTO>());\n");
+        result.append("        recording = true;\n");
+        result.append("    }\n");
+        result.append("\n");
+        result.append("    public void stopRecording() {\n");
+        result.append("        recording = false;\n");
+        result.append("    }\n");
+        result.append("\n");
+		result.append("    public FLUIActionRecording getActionRecording() {\n");
+		result.append("        return actionRecording;\n");
+		result.append("    }\n");
         result.append("    public boolean isSinglePageApp() {\n");
         result.append("        return singlePageApp;\n");
         result.append("    }\n");
@@ -150,6 +168,19 @@ public class ScreenManagerCreatorLogic {
         result.append("        fluiWebCallHandler.handleUpload(webCall, requestJSON, uploadFilename, uploadFileInputStream);\n");
         result.append("    }\n");
         result.append("\n");
+        result.append("    public FLUIReplyDTO onScreenRequest(FLUIScreenRequest request, String uploadFileName, InputStream uploadFileInputStream, boolean clearRecordedActions){\n");
+		result.append("        String requestJSON = new Gson().toJson(request.getRequest());\n");
+		result.append("        String replyJSON = onRequest(requestJSON, uploadFileName, uploadFileInputStream);\n");
+		result.append("        FLUIReplyDTO result = new Gson().fromJson(replyJSON, FLUIReplyDTO.class);\n");
+		result.append("        if (clearRecordedActions){\n");
+		result.append("            result.setRecordedActions(new ArrayList<FLUIReplyAction>());\n");
+		result.append("        }\n");
+		result.append("        return result;\n");
+		result.append("    }\n");
+		result.append("\n");
+
+        
+        
 //        result.append(createOpenScreenMethod(screenDefinitions));
     	result.append(createOpenStartScreenMethod(project, languageFlavor));
         result.append(createGetStartWebPageFilenameMethod(project));
@@ -403,10 +434,22 @@ public class ScreenManagerCreatorLogic {
     	result.append("        String replyJSON = null;\n");
     	result.append("        try{\n");
     	result.append("            FLUIRequest request = new Gson().fromJson(requestJSON, FLUIRequest.class);\n");
+		result.append("            if (request == null){\n");
+		result.append("                throw new Exception(\"request is null, requestJSON = >>\" + requestJSON + \"<<\");\n");
+		result.append("            }\n");
     	result.append("            listener.onRequest(request);\n");
     	result.append("            FLUIScreen view = screenIDToViewMap.get(request.getScreenID());\n");
+    	result.append("            FLUIAbstractReply reply;\n");
     	result.append("            if (view != null){\n");
-    	result.append("                replyJSON = view.onFLUIRequest(request, uploadFileName, uploadFileInputStream);\n");
+    	result.append("                reply = view.onFLUIRequest(recording, request, uploadFileName, uploadFileInputStream);\n");
+    	result.append("                if (reply != null){\n");
+    	result.append("                    replyJSON = new Gson().toJson(reply.getReplyDTO());\n");
+    	result.append("                    if (recording){;\n");
+    	result.append("                        actionRecording.getRequests().add(request);\n");
+    	result.append("                        actionRecording.getReplies().add(reply.getReplyDTO());\n");
+    	result.append("                    };\n");
+    	result.append("                }\n");
+//    	result.append("                replyJSON = view.onFLUIRequest(request, uploadFileName, uploadFileInputStream);\n");
     	result.append("            }\n");
     	result.append("            if (replyJSON != null){\n");
     	result.append("                reply(request.getScreenID(), replyJSON);\n");

@@ -144,6 +144,11 @@ public class FLUIAndroidWebView extends WebView {
 			}
 		});
 	}
+	
+	public void fireEventOnBackPressed() {
+		executeWithResultString("backButtonPressed();");
+	}
+	
 
 	public class Console {
 		@JavascriptInterface

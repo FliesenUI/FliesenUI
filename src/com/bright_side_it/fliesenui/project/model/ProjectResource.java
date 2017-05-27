@@ -1,14 +1,15 @@
 package com.bright_side_it.fliesenui.project.model;
 
-public class DefinitionResource implements Comparable<DefinitionResource> {
+public class ProjectResource implements Comparable<ProjectResource> {
     public enum ResourceType {
-        SCREEN, DTO, PROJECT, PLUGIN, IMAGE_ASSET
+        SCREEN, DTO, PROJECT, PLUGIN, IMAGE_ASSET, STRING_RESOURCE
     }
     public enum ResourceFormat{XML, IMAGE}
 
     private ResourceType resourceType;
     private ResourceFormat resourceFormat;
     private String id;
+    private String filePath;
 
     public ResourceType getResourceType() {
         return resourceType;
@@ -35,7 +36,7 @@ public class DefinitionResource implements Comparable<DefinitionResource> {
 	}
 
     @Override
-    public int compareTo(DefinitionResource other) {
+    public int compareTo(ProjectResource other) {
         if (other == null) {
             return 1;
         }
@@ -81,7 +82,13 @@ public class DefinitionResource implements Comparable<DefinitionResource> {
         return id.compareTo(other.id);
     }
 
+	public String getFilePath() {
+		return filePath;
+	}
 
-    
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
 
 }

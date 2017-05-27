@@ -27,6 +27,7 @@ public class TableWidgetItemDAO {
     public static final String TEXT_DTO_FIELD_ATTRIBUTE_NAME = "textDTOField";
     public static final String TOOLTIP_DTO_FIELD_ATTRIBUTE_NAME = "tooltipDTOField";
     public static final String TEXT_ATTRIBUTE_NAME = "text";
+    public static final String SHOW_ONLY_ON_HOVER_ATTRIBUTE_NAME = "showOnlyOnHover";
 
     private static final String NODE_NAME_BUTTON = "tableButton";
     private static final String NODE_NAME_LABEL = "tableLabel";
@@ -56,6 +57,7 @@ public class TableWidgetItemDAO {
         tableWidgetItem.setTextDTOField(XMLUtil.getStringAttributeOptional(node, TEXT_DTO_FIELD_ATTRIBUTE_NAME, null));
         tableWidgetItem.setTooltipDTOField(XMLUtil.getStringAttributeOptional(node, TOOLTIP_DTO_FIELD_ATTRIBUTE_NAME, null));
         tableWidgetItem.setText(XMLUtil.getStringAttributeOptional(node, TEXT_ATTRIBUTE_NAME, null));
+        tableWidgetItem.setOnlyShowOnHover(XMLUtil.getBooleanAttributeOptional(node, SHOW_ONLY_ON_HOVER_ATTRIBUTE_NAME, true));
         tableWidgetItem.setID(XMLUtil.getStringAttributeOptional(node, BaseConstants.ID_ATTRIBUTE_NAME, null));
 
         new ImageSourceAttributesDAO().readImageSourceFromAttributes(node, nodePath, result, tableWidgetItem);
@@ -86,7 +88,6 @@ public class TableWidgetItemDAO {
         return getNodeNameToTypeMap().keySet();
     }
 
-
     public List<AssistValue> getPossibleChildTags(String nodeName) {
         List<AssistValue> result = new ArrayList<>();
         if (in(nodeName, NODE_NAME_BUTTON, NODE_NAME_IMAGE_BUTTON)) {
@@ -95,14 +96,18 @@ public class TableWidgetItemDAO {
         return result;
     }
 
-
     public List<AssistValue> getTagAttributes(String nodeName) {
         List<AssistValue> result = new ArrayList<>();
+        if (in(nodeName, NODE_NAME_BUTTON, NODE_NAME_IMAGE_BUTTON)) {
+        	result.add(BaseUtil.createAssistValue(null, BaseConstants.ID_ATTRIBUTE_NAME, "ID"));
+        	result.add(BaseUtil.createAssistValue(false, SHOW_ONLY_ON_HOVER_ATTRIBUTE_NAME, "Default: true = only disply if mouse hovers over row"));
+        }
         if (in(nodeName, NODE_NAME_BUTTON)) {
             result.add(BaseUtil.createAssistValue(null, TEXT_ATTRIBUTE_NAME, "Button text"));
         } else if (in(nodeName, NODE_NAME_LABEL)) {
             result.add(BaseUtil.createAssistValue(null, TEXT_DTO_FIELD_ATTRIBUTE_NAME, "Field of the DTO that is used as the label text"));
-        }
+        } 
+        
         result.add(BaseUtil.createAssistValue(null, TOOLTIP_DTO_FIELD_ATTRIBUTE_NAME, "Field of the DTO that is used a tooltip"));
         result.addAll(new ImageSourceAttributesDAO().getTagAttributes());
 

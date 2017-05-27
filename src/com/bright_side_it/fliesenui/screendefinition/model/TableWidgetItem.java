@@ -12,6 +12,8 @@ public class TableWidgetItem implements EventParameterContainer, ImageSourceCont
     private String id;
     private String textDTOField;
     private String tooltipDTOField;
+    private boolean onlyShowOnHover;
+    
     private NodePath nodePath;
     private List<EventParameter> eventParameters;
 	private ImageSource imageSource;
@@ -86,4 +88,13 @@ public class TableWidgetItem implements EventParameterContainer, ImageSourceCont
 		this.tooltipDTOField = tooltipDTOField;
 	}
 
+	public boolean isOnlyShowOnHover() {
+		return onlyShowOnHover;
+	}
+
+	public void setOnlyShowOnHover(boolean onlyShowOnHover) {
+		this.onlyShowOnHover = onlyShowOnHover;
+	}
+
+	
 }

@@ -13,6 +13,7 @@ import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.EventHandler;
+import com.bright_side_it.fliesenui.screendefinition.model.EventHandler.EventType;
 import com.bright_side_it.fliesenui.screendefinition.model.EventHandlerContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
@@ -72,15 +73,47 @@ public class EventHandlerValidationLogic {
 			return;
     	}
     	BasicWidget basicWidget = (BasicWidget)handlerContainer;
-    	if (!BaseUtil.in(basicWidget.getType(), BasicWidgetType.BUTTON, BasicWidgetType.IMAGE_BUTTON)){
-			ValidationUtil.addError(project, screenDefinition, handlerContainer.getNodePath(), null, ProblemType.EVENT_CONTAINER_NOT_A_BUTTON,
-					"The event handler must be part of a button");
+    	if (!BaseUtil.in(basicWidget.getType(), BasicWidgetType.BUTTON, BasicWidgetType.IMAGE_BUTTON, BasicWidgetType.TEXT_FIELD)){
+			ValidationUtil.addError(project, screenDefinition, handlerContainer.getNodePath(), null, ProblemType.EVENT_CONTAINER_UNEXPECTED_TYPE,
+					"The event handler must be part of a button or a text field");
     	}
     	
     	
     	if ((handler.getOpenScreenParameterDTO() != null) && (handler.getScreenToOpen() == null)){
 			ValidationUtil.addError(project, screenDefinition, handlerContainer.getNodePath(), EventHandlerDAO.PROPERTY_NAME_OPEN_SCREEN_PARAMETER_DTO, ProblemType.EVENT_HANDLER_SCREEN_PARAMETER_DTO_WITHOUT_SCREEN_PARAMETER,
 					"If you specify a parameter DTO to open with a screen you must also specify the screen with property " + EventHandlerDAO.PROPERTY_NAME_SCREEN_TO_OPEN);
+    	}
+    	
+    	if (handler.getEventType() == EventType.ENTER){
+    		BasicWidget basicWidgetHandlerContainer = null;
+    		if (handlerContainer instanceof BasicWidget){
+    			basicWidgetHandlerContainer = (BasicWidget)handlerContainer;
+    		}
+    		if ((basicWidgetHandlerContainer == null) || (basicWidgetHandlerContainer.getType() != BasicWidgetType.TEXT_FIELD)){
+    			ValidationUtil.addError(project, screenDefinition, handlerContainer.getNodePath(), "", ProblemType.EVENT_HANDLER_TYPE_ENTER_FOR_NON_TEXT_FIELD,
+    					"The enter event may only used in text fields");
+    		}
+    	}
+    	if (handler.getEventType() == EventType.CLICK){
+    		BasicWidgetType basicWidgetHandlerContainerType = null;
+    		if (handlerContainer instanceof BasicWidget){
+    			basicWidgetHandlerContainerType = ((BasicWidget)handlerContainer).getType();
+    		}
+    		if ((basicWidgetHandlerContainerType == null) || (!BaseUtil.in(basicWidgetHandlerContainerType, BasicWidgetType.IMAGE_BUTTON, BasicWidgetType.BUTTON))){
+    			ValidationUtil.addError(project, screenDefinition, handlerContainer.getNodePath(), "", ProblemType.EVENT_HANDLER_TYPE_CLICK_FOR_NON_BUTTON,
+    					"The click event may only used in buttons");
+    		}
+    	}
+    	
+    	if (handler.getButtonToClick() != null){
+    		BasicWidget buttonToClick = BaseUtil.getBasicWidgetWithIDOptional(screenDefinition, handler.getButtonToClick());
+    		if (buttonToClick == null){
+    			ValidationUtil.addError(project, screenDefinition, handler.getNodePath(), EventHandlerDAO.PROPERTY_NAME_BUTTON_TO_CLICK, ProblemType.EVENT_HANDLER_BUTTON_TO_CLICK_DOES_NOT_EXIST,
+    					"There is no button with ID '" + handler.getButtonToClick() + "'. ");
+    		} else if (buttonToClick.getType() != BasicWidgetType.BUTTON){
+    			ValidationUtil.addError(project, screenDefinition, handler.getNodePath(), EventHandlerDAO.PROPERTY_NAME_BUTTON_TO_CLICK, ProblemType.EVENT_HANDLER_BUTTON_TO_CLICK_IS_NOT_A_BUTTON,
+    					"The widget with ID '" + handler.getButtonToClick() + "' is not a button, but has type " + buttonToClick.getType() + ". ");
+    		}
     	}
     	
     	if (handler.getScreenToOpen() != null){

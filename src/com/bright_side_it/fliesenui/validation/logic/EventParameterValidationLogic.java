@@ -20,6 +20,7 @@ import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContain
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
+import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
@@ -56,6 +57,11 @@ public class EventParameterValidationLogic {
     private SortedMap<String, CellItem> readWidgetIDMap(ScreenDefinition screenDefinition) {
         SortedMap<String, CellItem> result = new TreeMap<>();
         for (BasicWidget i : BaseUtil.getAllBasicWidgets(screenDefinition)) {
+            if (i.getID() != null) {
+                result.put(i.getID(), i);
+            }
+        }
+        for (TableWidget i : BaseUtil.getAllTableWidgets(screenDefinition)) {
             if (i.getID() != null) {
                 result.put(i.getID(), i);
             }
@@ -119,6 +125,17 @@ public class EventParameterValidationLogic {
                     if (!in(parameter.getWidgetProperty(), WidgetProperty.SELECTED_ID)) {
                         ValidationUtil.addError(project, screenDefinition, parameterContainer.getNodePath(), EventParameterDAO.VALUE_ATTRIBUTE_NAME,
                                 ProblemType.EVENT_PARAMETER_WRONG_WIDGET_PROPERTY, "property not supported for this select box: " + parameter.getWidgetProperty());
+                    }
+                } else if (widget instanceof TableWidget) {
+                    if (!in(parameter.getWidgetProperty(), WidgetProperty.CHECKED_ROW_IDS)) {
+                        ValidationUtil.addError(project, screenDefinition, parameterContainer.getNodePath(), EventParameterDAO.VALUE_ATTRIBUTE_NAME,
+                                ProblemType.EVENT_PARAMETER_WRONG_WIDGET_PROPERTY, "property not supported for table widget: " + parameter.getWidgetProperty());
+                    }
+                    if (!((TableWidget) widget).isRowCheckboxes()){
+                    	if (parameter.getWidgetProperty().equals(WidgetProperty.CHECKED_ROW_IDS)){
+                            ValidationUtil.addError(project, screenDefinition, parameterContainer.getNodePath(), EventParameterDAO.VALUE_ATTRIBUTE_NAME,
+                                    ProblemType.EVENT_PARAMETER_WRONG_CHECKED_ROW_IDS_REQUIRED_ROW_CHECKBOXES, "The property which rows are checked is only available if the table widget is set to have row check boxes: " + parameter.getWidgetProperty());
+                    	}
                     }
                 } else if (widget instanceof CodeEditorWidget) {
                 	if (!in(parameter.getWidgetProperty(), WidgetProperty.TEXT, WidgetProperty.LINE, WidgetProperty.POS_IN_LINE)) {

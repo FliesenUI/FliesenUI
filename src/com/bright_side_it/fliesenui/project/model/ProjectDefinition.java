@@ -17,6 +17,8 @@ public class ProjectDefinition implements ResourceDefinition {
     private String startScreenID;
     private NodePath nodePath;
     private Map<String, SharedReplyInterface> sharedReplyInterfaces;
+    /** null means that a default value is used. A relative path may be used, just like in output directories*/
+    private String stringResourceDir;
 
     public String getTitle() {
         return title;
@@ -104,6 +106,14 @@ public class ProjectDefinition implements ResourceDefinition {
 
 	public void setSharedReplyInterfaces(Map<String, SharedReplyInterface> sharedReplyInterfaces) {
 		this.sharedReplyInterfaces = sharedReplyInterfaces;
+	}
+
+	public String getStringResourceDir() {
+		return stringResourceDir;
+	}
+
+	public void setStringResourceDir(String stringResourceDir) {
+		this.stringResourceDir = stringResourceDir;
 	}
 
 }

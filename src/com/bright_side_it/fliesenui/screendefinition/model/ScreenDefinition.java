@@ -5,7 +5,8 @@ import java.util.Map;
 
 import com.bright_side_it.fliesenui.project.model.ResourceDefinition;
 
-public class ScreenDefinition implements ResourceDefinition {
+public class ScreenDefinition implements ResourceDefinition, EventListenerContainer {
+	private List<EventListener> eventListeners;
     private List<ScreenTopElement> topElements;
     private Map<String, DTODeclaration> dtoDeclarations;
     private Map<String, Timer> timers;
@@ -68,6 +69,14 @@ public class ScreenDefinition implements ResourceDefinition {
 
 	public void setTimers(Map<String, Timer> timers) {
 		this.timers = timers;
+	}
+
+	public List<EventListener> getEventListeners() {
+		return eventListeners;
+	}
+
+	public void setEventListeners(List<EventListener> eventListeners) {
+		this.eventListeners = eventListeners;
 	}
 
 }

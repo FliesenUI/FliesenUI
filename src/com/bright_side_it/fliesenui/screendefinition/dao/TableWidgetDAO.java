@@ -25,6 +25,9 @@ public class TableWidgetDAO {
     public static final String ID_DTO_FIELD_ATTRIBUTE_NAME = "idDTOField";
     public static final String BACKGROUND_COLOR_DTO_FIELD_ATTRIBUTE_NAME = "backgroundColorDTOField";
     public static final String STYLE_FIELD_ATTRIBUTE_NAME = "style";
+    public static final String SHOW_COLUMN_HEADERS_ATTRIBUTE_NAME = "showColumnHeaders";
+    public static final String SHOW_FILTER_ATTRIBUTE_NAME = "showFilter";
+    public static final String ROW_CHECKBOXES_ATTRIBUTE_NAME = "rowCheckboxes";
 
     private static final String NODE_NAME = "table";
     private static final String STYLE_VALUE_NORMAL = "normal";
@@ -51,7 +54,10 @@ public class TableWidgetDAO {
         tableWidget.setBackgroundColorDTOField(XMLUtil.getStringAttributeOptional(node, BACKGROUND_COLOR_DTO_FIELD_ATTRIBUTE_NAME, null));
         tableWidget.setContentHeight(XMLUtil.getIntegerAttributeOptional(node, CONTENT_HEIGHT_ATTRIBUTE_NAME, null));
         tableWidget.setStyle(parseStyle(XMLUtil.getStringAttributeOptional(node, STYLE_FIELD_ATTRIBUTE_NAME, STYLE_VALUE_NORMAL)));
-
+        tableWidget.setShowColumnHeader(XMLUtil.getBooleanAttributeOptional(node, SHOW_COLUMN_HEADERS_ATTRIBUTE_NAME, true));
+        tableWidget.setShowFilter(XMLUtil.getBooleanAttributeOptional(node, SHOW_FILTER_ATTRIBUTE_NAME, false));
+        tableWidget.setRowCheckboxes(XMLUtil.getBooleanAttributeOptional(node, ROW_CHECKBOXES_ATTRIBUTE_NAME, false));
+        
         TableWidgetColumnDAO tableWidgetColumnDAO = new TableWidgetColumnDAO();
         EventParameterDAO eventParameterDAO = new EventParameterDAO();
         int nodeIndex = 0;
@@ -106,6 +112,9 @@ public class TableWidgetDAO {
         result.add(BaseUtil.createAssistValue(false, CONTENT_HEIGHT_ATTRIBUTE_NAME,
                 "is specified the height of the table content will be set to this value (in pixels) and scroll bars will be shown"));
         result.add(BaseUtil.createAssistValue(false, STYLE_FIELD_ATTRIBUTE_NAME, "style of the table (" + STYLE_VALUE_NORMAL + " / " + STYLE_VALUE_SMALL + ")"));
+        result.add(BaseUtil.createAssistValue(false, SHOW_COLUMN_HEADERS_ATTRIBUTE_NAME, "if set to false the column headers will be hidden"));
+        result.add(BaseUtil.createAssistValue(false, ROW_CHECKBOXES_ATTRIBUTE_NAME, "makes each row selectable by a checkbox"));
+        result.add(BaseUtil.createAssistValue(false, SHOW_FILTER_ATTRIBUTE_NAME, "if set to true a filter will be shown"));
         result.add(BaseUtil.createAssistValue(false, BACKGROUND_COLOR_DTO_FIELD_ATTRIBUTE_NAME,
         		"Field of the DTO that contains a string (e.g. '#ff0000') that defines the background color of the row"));
         return result;
@@ -117,5 +126,12 @@ public class TableWidgetDAO {
         assistValues.add(BaseUtil.createAssistValue(null, STYLE_VALUE_SMALL, "small table size"));
         return new AssistValueList(assistValues);
     }
+
+	public static AssistValueListProvider getPossibleShowColumnHeadersAttributeValues() {
+        List<AssistValue> assistValues = new ArrayList<AssistValue>();
+        assistValues.add(BaseUtil.createAssistValue(null, "" + true, "show column headers (defaul)"));
+        assistValues.add(BaseUtil.createAssistValue(null, "" + false, "hide column headers"));
+        return new AssistValueList(assistValues);
+	}
 
 }

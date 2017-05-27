@@ -5,12 +5,12 @@ import java.io.File;
 import com.bright_side_it.fliesenui.generator.service.CodeGeneratorService;
 
 public class FLUICommandLineInterface {
-	private static final String VERSION = "1.0.0";
+	private static final String VERSION = "1.1.0";
 	private static final String ACTION_GENERATE = "-generate";
 	
 	public static void main(String[] args) {
 		System.out.println("---------------------------------------------------------------------------");
-		System.out.println("Fliesen UI - version " + VERSION + ", 2016 by Philip Heyse - fliesenui@bright-side-it.com");
+		System.out.println("Fliesen UI - version " + VERSION + ", 2016, 2017 by Philip Heyse - fliesenui@bright-side-it.com");
 		
 		if (args.length != 2){
 			printUsage();

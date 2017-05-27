@@ -153,6 +153,9 @@ public class XMLParserUtil {
 
         XMLParserTagItem tag = parseItems(text);
         ArrayList<Integer> remainingItems = new ArrayList<>(useNodeIndexChain);
+        if (remainingItems.isEmpty()) {
+            throw new Exception("node chain index is empty.");
+        }
         int firstIndex = remainingItems.remove(0);
         if (firstIndex != 0) {
             throw new Exception("Expected 0 as the first item in the node index chain");

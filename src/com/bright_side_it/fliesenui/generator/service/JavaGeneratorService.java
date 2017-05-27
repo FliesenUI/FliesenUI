@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.LanguageFlavor;
+import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.generator.logic.FLUIControlCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.ImageStreamURLConnectionCreatorLogic;
@@ -19,20 +19,23 @@ import com.bright_side_it.fliesenui.generator.logic.JavaDTOCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenListenerCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenReplyCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JavaScreenRequestCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaSharedReplyInterfaceCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JavaTestWriterCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.ScreenManagerCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.ScreenManagerInterfaceCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.StringClassCreatorLogic;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.logic.DefinitionResourceLogic;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
 import com.bright_side_it.fliesenui.project.model.Project;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.bright_side_it.fliesenui.project.model.SharedReplyInterface;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 
 public class JavaGeneratorService {
-    public void generateJava(Project project, Set<DefinitionResource> upToDateResources, File javaBaseDir, LanguageFlavor languageFlavor) throws Exception {
+    public void generateJava(Project project, Set<ProjectResource> upToDateResources, File javaBaseDir, LanguageFlavor languageFlavor) throws Exception {
         Collection<ScreenDefinition> screenDefinitionsToUpdate = new ArrayList<>();
         DefinitionResourceLogic logic = new DefinitionResourceLogic();
         for (ScreenDefinition i : project.getScreenDefinitionsMap().values()) {
@@ -45,6 +48,8 @@ public class JavaGeneratorService {
         }
 
         new ScreenManagerCreatorLogic().generateScreenManager(project, javaBaseDir, languageFlavor);
+        new JavaTestWriterCreatorLogic().createJava(project, javaBaseDir);
+        new StringClassCreatorLogic().generateStringClass(project, javaBaseDir);
         new ScreenManagerInterfaceCreatorLogic().generateScreenManagerInterface(project, javaBaseDir, languageFlavor);
         if (languageFlavor == LanguageFlavor.JAVA){
         	new FLUIControlCreatorLogic().generateFLUIControl(project.getScreenDefinitionsMap().values(), javaBaseDir);
@@ -54,6 +59,7 @@ public class JavaGeneratorService {
         File screenPackageDir = GeneratorUtil.getScreenPackageDir(javaBaseDir);
         JavaSharedReplyInterfaceCreatorLogic javaSharedReplyInterfaceCreatorLogic = new JavaSharedReplyInterfaceCreatorLogic();
         JavaScreenCreatorLogic javaScreenCreatorLogic = new JavaScreenCreatorLogic();
+        JavaScreenRequestCreatorLogic javaScreenRequestCreatorLogic = new JavaScreenRequestCreatorLogic();
         JavaScreenReplyCreatorLogic javaScreenReplyCreatorLogic = new JavaScreenReplyCreatorLogic();
         JavaScreenListenerCreatorLogic javaScreenListenerCreatorLogic = new JavaScreenListenerCreatorLogic();
 
@@ -70,8 +76,10 @@ public class JavaGeneratorService {
             javaScreenCreatorLogic.createJava(project, i, screenPackageDir);
             javaScreenReplyCreatorLogic.createJava(project, i, screenPackageDir);
             javaScreenListenerCreatorLogic.createJava(project, i, screenPackageDir);
+            javaScreenRequestCreatorLogic.createJava(project, i, screenPackageDir);
         }
 
+        
         File dtoPackageDir = GeneratorUtil.getDTOPackageDir(javaBaseDir);
         JavaDTOCreatorLogic javaDTOCreatorLogic = new JavaDTOCreatorLogic();
         JavaDTOBuilerCreatorLogic dtoBuilerCreatorLogic = new JavaDTOBuilerCreatorLogic(); 

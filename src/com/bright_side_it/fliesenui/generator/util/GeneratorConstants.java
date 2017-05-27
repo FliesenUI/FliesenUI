@@ -11,12 +11,14 @@ public class GeneratorConstants {
     public static final String SCREEN_CLASS_NAME_SUFFIX = "View";
     public static final String SHARED_REPLY_INTERFACE_NAME_SUFFIX = "SharedReply";
     public static final String SCREEN_REPLY_CLASS_NAME_SUFFIX = "Reply";
+    public static final String REQUEST_CLASS_NAME_SUFFIX = "Request";
     public static final String SCREEN_LISTENER_CLASS_NAME_SUFFIX = "Listener";
     public static final String CLICKED_METHOD_SUFFIX = "Clicked";
     public static final String DTO_CLASS_NAME_SUFFIX = "DTO";
     public static final String DTO_BUILDER_CLASS_NAME_SUFFIX = "DTOBuilder";
     public static final String TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME = "rowID";
     public static final String SELECTED_ID_PARAMETER_NAME = "selected";
+    public static final String FLUI_STRING_CLASS_NAME = "FLUIString";
 
     public static final String GENERATED_DTO_PACKAGE_NAME = "generated.fliesenui.dto";
     public static final String GENERATED_SCREEN_PACKAGE_NAME = "generated.fliesenui.screen";
@@ -26,10 +28,12 @@ public class GeneratorConstants {
     public static final String REQUEST_ACTION_ON_LOADED = "onLoaded";
     public static final String REQUEST_ACTION_ON_INNPUT_DIALOG_RESULT = "onInputDialogResult";
     public static final String REQUEST_ACTION_ON_CONFIRM_DIALOG_RESULT = "onConfirmDialogResult";
+    public static final String REQUEST_ACTION_ON_LIST_CHOOSER_RESULT = "onListChooserResult";
 
     public static final String JAVA_METHOD_NAME_ON_LOADED = "onLoaded";
     public static final String JAVA_METHOD_NAME_ON_INNPUT_DIALOG_RESULT = "onInputDialogResult";
     public static final String JAVA_METHOD_NAME_ON_CONFIRM_DIALOG_RESULT = "onConfirmDialogResult";
+    public static final String JAVA_METHOD_NAME_ON_LIST_CHOOSER_RESULT = "onListChooserResult";
     public static final String IMAGE_ASSET_ENUM_NAME = "ImageAsset";
     public static final String SCREEN_ENUM_NAME = "Screen";
     public static final String SCREEN_PARAMETER_DTO_GET_NAME = "parameterDTO";
@@ -47,7 +51,27 @@ public class GeneratorConstants {
 	public static final String BOX_1_CM_HTML = "<div id=\"box1cm\" style=\"width: 1cm; height: 1cm; position: absolute; left: -100%; top: -100%;\"></div>";
 	public static final String CLIENT_PROPERTIES_PARAMETER_NAME = "_ClientProperties"; //:start with "_" because there are also DTO parameters which may have any name
 	public static final String JS_GET_CLIENT_PROPETIES_FUNCTION_NAME = "getClientProperties";
+	public static final String JS_GET_TEXT_FUNCTION_NAME = "getText";
 	public static final String CLIENT_PROPERTIES_DTO_CLASS_NAME = "FLUIClientPropertiesDTO";
+	public static final String STRINGS_JS_FILENAME = "strings.js";
+	public static final String JS_CURRENT_LANGUAGE_VAR_NAME = "currentLanguage";
+
+	public static final String TEST_WRITER_CLASS_NAME = "FLUITestWriter";
+
+	
+	public static final String EDITOR_TEXT_PARAMETER_NAME = "editorText";
+	public static final String LINE_PARAMETER_NAME = "line";
+	public static final String POS_IN_LINE_PARAMETER_NAME = "posInLine";
+	public static final String KEY_EVENT_INFO_PARAMETER_NAME = "info";
+	public static final String KEY_CHAR_PARAMETER_NAME = "keyChar";
+	public static final String KEY_CODE_PARAMETER_NAME = "keyCode";
+	public static final String KEY_MODIFIER_PARAMETER_NAME = "keyModifier";
+	public static final String KEY_EVENT_TYPE_PARAMETER_NAME = "keyEventType";
+//	public static final String ALT_MODIFIER_PARAMETER_NAME = "alt";
+//	public static final String CONTROL_MODIFIER_PARAMETER_NAME = "control";
+//	public static final String SHIFT_MODIFIER_PARAMETER_NAME = "shift";
+//	public static final String META_MODIFIER_PARAMETER_NAME = "meta";
+	
 
 
 }

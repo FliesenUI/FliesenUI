@@ -20,9 +20,16 @@ public class JavaSharedReplyInterfaceCreatorLogic {
 		File destFile = new File(screenPackageDir, interfaceName + GeneratorConstants.JAVA_FILE_ENDING);
 		result.append("package " + GeneratorConstants.GENERATED_SCREEN_PACKAGE_NAME + ";\n");
 		result.append("\n");
+		result.append("import java.util.Collection;");
+		result.append("\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIString.StringLanguage;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".TextHighlighting;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".CursorPos;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".ContextAssist;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelImageAssetList;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelList;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIImageAssets.ImageAsset;\n");
+
 		result.append("\n");
 		result.append(createDTOImportStatements(project, sharedReplyInterface));
 		result.append("\n");

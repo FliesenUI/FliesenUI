@@ -40,6 +40,7 @@ public class ScreenDefinitionDAO {
         result.add(BaseUtil.createAssistValue(null, LayoutContainerDAO.getNodeName(), "Layout Container"));
         result.add(BaseUtil.createAssistValue(null, DTODeclarationDAO.getNodeName(), "DTO (Data Transfer Object)"));
         result.add(BaseUtil.createAssistValue(null, TimerDAO.getNodeName(), "Timer"));
+        result.add(BaseUtil.createAssistValue(null, EventListenerDAO.NODE_NAME_LISTEN_TO_BACK_ACTION, "Listen to back button action (Browser, Android)"));
         result.add(BaseUtil.createAssistValue(null, PluginInstanceDAO.getNodeName(), "Plugin (Defined in separate file)"));
         return result;
     }
@@ -86,6 +87,7 @@ public class ScreenDefinitionDAO {
         LayoutContainerDAO layoutContainerDAO = new LayoutContainerDAO();
         DTODeclarationDAO dtoDeclarationDAO = new DTODeclarationDAO();
         TimerDAO timerDAO = new TimerDAO();
+        EventListenerDAO eventListenerDAO = new EventListenerDAO();
         PluginInstanceDAO pluginInstanceDAO = new PluginInstanceDAO();
         for (Node i : XMLUtil.getChildrenWithoutTextNodes(root)) {
             NodePath childNodePath = nodePathLogic.createChildNodePath(nodePath, nodeIndex);
@@ -98,6 +100,8 @@ public class ScreenDefinitionDAO {
                 	timerDAO.readTimerNode(i, childNodePath, result);
                 } else if (pluginInstanceDAO.isPluginDeclarationNode(i)) {
                 	pluginInstanceDAO.readPluginInstance(i, childNodePath, result, null);
+                } else if (eventListenerDAO.isEventListenerNode(i.getNodeName())) {
+                	eventListenerDAO.readEventListener(i, childNodePath, result, result.getScreenDefinition());
                 } else {
                     throw new Exception("Unknown node type: " + i.getNodeName());
                 }

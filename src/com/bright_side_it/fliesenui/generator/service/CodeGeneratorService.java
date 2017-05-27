@@ -6,10 +6,11 @@ import java.util.TreeSet;
 
 import com.bright_side_it.fliesenui.base.util.FileUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.LanguageFlavor;
+import com.bright_side_it.fliesenui.generator.logic.StringJSCreatorLogic;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.imageasset.dao.ImageAssetDefinitionDAO;
 import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectOutput;
 import com.bright_side_it.fliesenui.project.service.ProjectReaderService;
@@ -38,8 +39,8 @@ public class CodeGeneratorService {
      * @param projectOutput 
      * @throws Exception
      */
-    public void generateCodeFromValidatedProject(Project project, File projectDir, Set<DefinitionResource> upToDateResources, ProjectOutput projectOutput) throws Exception {
-        Set<DefinitionResource> useUpToDateResources = upToDateResources;
+    public void generateCodeFromValidatedProject(Project project, File projectDir, Set<ProjectResource> upToDateResources, ProjectOutput projectOutput) throws Exception {
+        Set<ProjectResource> useUpToDateResources = upToDateResources;
         if (useUpToDateResources == null) {
             useUpToDateResources = new TreeSet<>();
         }
@@ -64,9 +65,11 @@ public class CodeGeneratorService {
     }
 
 
-	private void updateResources(Project project, File projectDir, Set<DefinitionResource> upToDateResources, File sourcesOutputDir, LanguageFlavor languageFlavor) throws Exception {
+	private void updateResources(Project project, File projectDir, Set<ProjectResource> upToDateResources, File sourcesOutputDir, LanguageFlavor languageFlavor) throws Exception {
         File webDir = GeneratorUtil.getWebOutputDir(sourcesOutputDir);
         webDir.mkdirs();
+        File webLibDir = GeneratorUtil.getWebLibOutputDir(sourcesOutputDir);
+        webLibDir.mkdirs();
         File imageAssetOutpuDir = GeneratorUtil.getImageAssetOutputDir(sourcesOutputDir);
         if (upToDateResources.isEmpty()) {
             if (imageAssetOutpuDir.exists()) {
@@ -77,8 +80,9 @@ public class CodeGeneratorService {
         new MultiPageAppHTMLGeneratorService().generateHTML(project, upToDateResources, webDir);
         new SinglePageAppHTMLGeneratorService().generateHTML(project, upToDateResources, webDir);
         if (upToDateResources.isEmpty()) {
-            copyWebResources(webDir);
+            copyWebResources(sourcesOutputDir, webDir);
         }
+        new StringJSCreatorLogic().generateStringJS(project, webLibDir);
         new JSGeneratorService().generateJS(project, upToDateResources, webDir);
         imageAssetOutpuDir.mkdirs();
         log("Image asset output dir: '" + imageAssetOutpuDir.getAbsolutePath() + "'");
@@ -89,7 +93,7 @@ public class CodeGeneratorService {
 
 	}
 
-	private void updateJavaSources(Project project, File projectDir, Set<DefinitionResource> upToDateResources, File sourcesOutputDir, LanguageFlavor languageFlavor) throws Exception {
+	private void updateJavaSources(Project project, File projectDir, Set<ProjectResource> upToDateResources, File sourcesOutputDir, LanguageFlavor languageFlavor) throws Exception {
 		log("updateJavaSources: languageFlavor = " + languageFlavor);
 		
         File webDir = GeneratorUtil.getWebOutputDir(sourcesOutputDir);
@@ -136,9 +140,9 @@ public class CodeGeneratorService {
     }
 
 
-    private void copyWebResources(File webDir) throws Exception {
+    private void copyWebResources(File baseDir, File webDir) throws Exception {
         ResourceDAO resourceDA = new ResourceDAO();
-        File libDir = new File(webDir, "lib");
+        File libDir = GeneratorUtil.getWebLibOutputDir(baseDir);
         if (!libDir.exists()) {
             libDir.mkdir();
         }
@@ -147,6 +151,7 @@ public class CodeGeneratorService {
         }
 
         resourceDA.copyResourceToDir(Resource.FLUI_CSS, libDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_UTIL_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_ANIMATE_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_AREA_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_MATERIAL_CSS, libDir);
@@ -175,6 +180,15 @@ public class CodeGeneratorService {
         resourceDA.copyResourceToDir(Resource.CODEMIRROR_CSS, codeMirrorLibDir);
 
 
+        File imgDir = new File(webDir, "img");
+        if (!imgDir.exists()) {
+        	imgDir.mkdir();
+        }
+        if (!imgDir.exists()) {
+            throw new Exception("Could not create lib-dir: '" + imgDir.getAbsolutePath() + "'");
+        }
+        resourceDA.copyResourceToDir(Resource.IMAGE_CHECKBOX_CHECKED, imgDir);
+        resourceDA.copyResourceToDir(Resource.IMAGE_CHECKBOX_UNCHECKED, imgDir);
 
     }
 
@@ -201,12 +215,19 @@ public class CodeGeneratorService {
         resourceDA.copyResourceToDir(Resource.FLUI_REPLY_DTO_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_CLIENT_PROPERTIES_DTO_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_REPLY_ABSTRACT_REPLY_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_REPLY_ACTION_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_TEST_CLASS_WRITER_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_TEST_REPLY_WRITER_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_REQUEST_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_ACTION_RECORDING_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_IMAGE_STREAM_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_FILE_STREAM_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_WEB_CALL_HANDLER_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_WEB_CALL_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_SCREEN_REQUEST_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.TEXT_HIGHLIGHTING_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.KEY_MODIFIER_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_KEY_EVENT_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CONFIRM_DIALOG_PARAMETERS_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.INPUT_DIALOG_PARAMETERS_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CURSOR_POS_JAVA, packageDir);
@@ -214,8 +235,15 @@ public class CodeGeneratorService {
         resourceDA.copyResourceToDir(Resource.CONTEXT_ASSIST_CHOICE_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_SCREEN_MANAGER_LISTENER_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.FLUI_UTIL_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.ID_LABEL_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.ID_LABEL_LIST_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.ID_LABEL_IMAGE_ASSET_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.ID_LABEL_IMAGE_ASSET_LIST_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.LIST_CHOOSER_PARAMETERS_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.LIST_CHOOSER_ITEM_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.HTTP_MULTIPART_REQUEST_READER_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.SIMPLE_MANAGER_LISTENER_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.JAR_INPUT_STREAM_URL_CONNECTION_JAVA, packageDir);
     }
 
     private static void log(String message) {
@@ -231,7 +259,7 @@ public class CodeGeneratorService {
 
         try {
             new CodeGeneratorService().generateCode(new File("..\\Data\\Testing001"));
-            new CodeGeneratorService().generateCode(new File("..\\samples\\ContactManagerDemo\\FliesenUIProject"));
+//            new CodeGeneratorService().generateCode(new File("..\\samples\\ContactManagerDemo\\FliesenUIProject"));
             new CodeGeneratorService().generateCode(new File("FliesenUIProject"));
         } catch (Exception e) {
             e.printStackTrace();

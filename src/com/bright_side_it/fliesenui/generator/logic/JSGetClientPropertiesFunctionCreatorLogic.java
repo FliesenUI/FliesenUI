@@ -11,6 +11,7 @@ public class JSGetClientPropertiesFunctionCreatorLogic {
 		result.append("    \n");
 		result.append("    try{\n");
 		result.append("        result.userAgent = navigator.userAgent;\n");
+		result.append("        result.language = navigator.language;\n");
 		result.append("        if (\"WebBrowser\" == browserMode){\n");
 		result.append("            result.screenAvailableWidthInPixels = window.screen.availWidth;\n");
 		result.append("            result.screenAvailableHeightInPixels = window.screen.availHeight;\n");

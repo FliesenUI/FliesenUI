@@ -3,7 +3,7 @@ package com.bright_side_it.fliesenui.screendefinition.model;
 /** a parameter that is send when an event occurs */
 public class EventParameter {
     public enum WidgetProperty {
-        TEXT, LINE, POS_IN_LINE, SELECTED, SELECTED_ID
+        TEXT, LINE, POS_IN_LINE, SELECTED, SELECTED_ID, CHECKED_ROW_IDS
     }
 
     private String dtoID;

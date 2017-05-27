@@ -9,16 +9,17 @@ import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.generator.logic.ContainerHTMLGeneratorLogic;
 import com.bright_side_it.fliesenui.generator.logic.HTMLTagLogic;
 import com.bright_side_it.fliesenui.generator.logic.JSGetClientPropertiesFunctionCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JSStringResourceFunctionsCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.PluginInstanceHTMLGeneratorLogic;
 import com.bright_side_it.fliesenui.generator.model.HTMLTag;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.logic.DefinitionResourceLogic;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectDefinition;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.bright_side_it.fliesenui.res.dao.ResourceDAO;
 import com.bright_side_it.fliesenui.res.dao.ResourceDAO.Resource;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
@@ -35,8 +36,9 @@ public class MultiPageAppHTMLGeneratorService {
     private static final CharSequence HTML_JAVASCRIPT_PLACEHOLDER = "§{htmlJavaScript}";
     private static final CharSequence CONTROLLER_NAME_PLACEHOLDER = "§{controllerName}";
     private static final CharSequence SCREEN_PANEL_NAME_PLACEHOLDER = "§{screenPanelName}";
+    private static final CharSequence BACK_BUTTON_SCRIPT_PLACEHOLDER = "§{backButtonScript}";
 
-    public void generateHTML(Project project, Set<DefinitionResource> upToDateResources, File dir) throws Exception {
+    public void generateHTML(Project project, Set<ProjectResource> upToDateResources, File dir) throws Exception {
         DefinitionResourceLogic logic = new DefinitionResourceLogic();
         for (BrowserType browserType : BaseConstants.BrowserType.values()) {
             for (ScreenDefinition screenDefinition : project.getScreenDefinitionsMap().values()) {
@@ -61,6 +63,7 @@ public class MultiPageAppHTMLGeneratorService {
         html = html.replace(JAVASCRIPT_PART_2_FILENAME_PLACEHOLDER, GeneratorUtil.getJSPart2Filename(screenDefinition));
         html = html.replace(CONTENT_PLACEHOLDER, generateHTMLBodyContentText(project, screenDefinition, browserType, false));
         html = html.replace(HTML_JAVASCRIPT_PLACEHOLDER, generateHTMLJS(project, browserType));
+        html = html.replace(BACK_BUTTON_SCRIPT_PLACEHOLDER, GeneratorUtil.generateHTMLJSBackButtonLogic(project, browserType, screenDefinition.getID()));
 
         File file = new File(dir, GeneratorUtil.createHTMLFilename(screenDefinition, browserType));
         FileUtil.writeStringToFile(file, html);
@@ -71,6 +74,8 @@ public class MultiPageAppHTMLGeneratorService {
     	result.append(GeneratorUtil.generateHTMLJSText(project, browserType, false) + "\n");
     	result.append("<script type=\"text/javascript\">\n");
     	result.append(new JSGetClientPropertiesFunctionCreatorLogic().createGetClientPropertiesFunction(browserType));
+    	result.append("\n\n\n");
+    	result.append(new JSStringResourceFunctionsCreatorLogic().createStringResourceFunctions());
     	result.append("        </script>");
 		return result;
 	}

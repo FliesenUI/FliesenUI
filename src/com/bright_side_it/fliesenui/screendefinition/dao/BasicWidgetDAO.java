@@ -135,7 +135,7 @@ public class BasicWidgetDAO{
         ImageSourceAttributesDAO imageSourceAttributesDAO = new ImageSourceAttributesDAO();
         
         imageSourceAttributesDAO.readImageSourceFromAttributes(node, nodePath, result, widget);
-
+//        EventListenerDAO eventListenerDAO = new EventListenerDAO();
         int nodeIndex = 0;
         for (Node i : XMLUtil.getChildrenWithoutTextNodes(node)) {
             NodePath childNodePath = new NodePathLogic().createChildNodePath(nodePath, nodeIndex);
@@ -144,6 +144,10 @@ public class BasicWidgetDAO{
             		eventParameterDAO.readEventParameter(i, childNodePath, result, widget);
             	} else if (eventHandlerDAO.isEventHandlerNode(i.getNodeName())){
             		eventHandlerDAO.readEventHandler(i, childNodePath, result, widget);
+//            	} else if (EventListenerDAO.NODE_NAME_LISTEN_TO_KEY_PRESS.equals(i.getNodeName())){
+//            		eventListenerDAO.readEventListener(i, childNodePath, result, widget);
+//            	} else if (EventListenerDAO.NODE_NAME_LISTEN_TO_KEY_DOWN.equals(i.getNodeName())){
+//            		eventListenerDAO.readEventListener(i, childNodePath, result, widget);
             	} else {
             		throw new Exception("Unexpected child node: '" + i.getNodeName() + "'");
             	}
@@ -236,8 +240,15 @@ public class BasicWidgetDAO{
     public List<AssistValue> getPossibleChildTags(String nodeName) {
         List<AssistValue> result = new ArrayList<>();
         if (in(nodeName, WIDGET_NODE_NAME_BUTTON)) {
-            result.add(BaseUtil.createAssistValue(null, EventParameterDAO.getNodeName(), "Paraneter that is passed to the method when the button is pressed"));
+            result.add(BaseUtil.createAssistValue(null, EventParameterDAO.getNodeName(), "Parameter that is passed to the method when the button is pressed"));
         }
+        if (in(nodeName, WIDGET_NODE_NAME_TEXT_FIELD)) {
+        	result.add(BaseUtil.createAssistValue(null, EventHandlerDAO.NODE_NAME_ON_ENTER, "Handle event 'enter key'"));
+        }
+//        if (in(nodeName, WIDGET_NODE_NAME_TEXT_AREA, WIDGET_NODE_NAME_TEXT_FIELD)) {
+//        	result.add(BaseUtil.createAssistValue(null, EventListenerDAO.NODE_NAME_LISTEN_TO_KEY_PRESS, "Handle event 'key press'"));
+//        	result.add(BaseUtil.createAssistValue(null, EventListenerDAO.NODE_NAME_LISTEN_TO_KEY_DOWN, "Handle event 'key down'"));
+//        }
         return result;
     }
 

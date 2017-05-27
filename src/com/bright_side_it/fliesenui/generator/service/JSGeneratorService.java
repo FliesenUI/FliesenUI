@@ -6,11 +6,12 @@ import java.io.File;
 import java.util.Set;
 import java.util.SortedMap;
 
+import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.FileUtil;
-import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.generator.logic.JSCodeEditorCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JSDTOPreviewInitCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JSListChooserDialogCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JSOpenScreenFunctionsCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JSReplyFunctionCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenDialogCreatorLogic;
@@ -20,18 +21,20 @@ import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginEvent;
 import com.bright_side_it.fliesenui.project.logic.DefinitionResourceLogic;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectDefinition;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.EventHandler;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameter;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContainer;
+import com.bright_side_it.fliesenui.screendefinition.model.EventHandler.EventType;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener.EventListenType;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSource;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSourceContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
@@ -43,14 +46,11 @@ import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetColumn;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem;
-import com.bright_side_it.fliesenui.screendefinition.model.Timer;
-import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
-import com.bright_side_it.fliesenui.screendefinition.model.EventHandler.EventType;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem.TableWidgetType;
+import com.bright_side_it.fliesenui.screendefinition.model.Timer;
 
 public class JSGeneratorService {
-	public void generateJS(Project project, Set<DefinitionResource> upToDateResources, File dir) throws Exception {
+	public void generateJS(Project project, Set<ProjectResource> upToDateResources, File dir) throws Exception {
 		DefinitionResourceLogic logic = new DefinitionResourceLogic();
 		for (ScreenDefinition i : project.getScreenDefinitionsMap().values()) {
 			if (!upToDateResources.contains(logic.create(ResourceType.SCREEN, ResourceFormat.XML, i.getID()))) {
@@ -79,20 +79,31 @@ public class JSGeneratorService {
 		result.append("var " + screenIDPrefix + "controllerReady = false;\n");
 		result.append("var " + screenIDPrefix + "logDebugBuffer = \"\";\n");
 		result.append("var " + screenIDPrefix + "parameterDTO;\n");
+		for (TableWidget tableWidget: BaseUtil.getAllTableWidgets(screenDefinition)){
+			result.append("var " + GeneratorUtil.getJSTableFilterTopItemIndexVariableName(screenDefinition, tableWidget) + " = null;\n");
+			result.append("var " + GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget) + " = null;\n");
+		}
 		result.append("\n");
+		result.append(createTableFilterTextKeyDownMethods(screenDefinition));
+		result.append(createTableFilters(screenDefinition));
 		result.append("app.controller(\"" + GeneratorUtil.getAngularControllerName(screenDefinition) + "\", function($scope, $mdToast, $mdDialog, $http) {\n");
 		result.append("    " + screenIDPrefix + "setInitialValues();\n");
 		result.append("    $scope.http = $http;\n");
+		result.append(createTableSelectedItemsObjects(screenDefinition, widgetMap, screenIDPrefix));
+		
 		// result.append(createInitialValuesCode(screenDefinition, project));
 		result.append("\n");
 		result.append(new JavaScreenDialogCreatorLogic().createShowMessageFunction(screenDefinition));
 		result.append(new JavaScreenDialogCreatorLogic().createInputDialogFunction(screenIDPrefix));
 		result.append(new JavaScreenDialogCreatorLogic().createConfirmDialogFunction(screenIDPrefix));
+		result.append(new JSListChooserDialogCreatorLogic().createListChooserDialogMethods(screenDefinition, screenIDPrefix));
 		result.append("\n");
 		result.append(createAllButtonsClickMethods(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(createAllChangedMethods(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(createAllTableWidgetButtonsClickMethods(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(createTableRowClickMethods(screenDefinition, widgetMap, screenIDPrefix));
+		result.append(createTableRowSelectedBoxClickMethods(screenDefinition, widgetMap, screenIDPrefix));
+		result.append(createTableGetCheckedRowsMethods(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(createAllPluginEventMethods(project, screenDefinition, widgetMap, screenIDPrefix));
 		result.append(createReadParameterDTOCode(screenDefinition, screenIDPrefix));
 		result.append(createSelecBoxSelectedIDGetterAndSetterMethods(screenDefinition, screenIDPrefix));
@@ -126,11 +137,160 @@ public class JSGeneratorService {
 		result.append(createFileUploadFunctions(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(new JSOpenScreenFunctionsCreatorLogic().createOpenScreenMethod(screenDefinition, screenIDPrefix));
 		result.append(new JSOpenScreenFunctionsCreatorLogic().createOpenScreenMultiPageApp(screenDefinition, screenIDPrefix));
+		result.append(createOnBackPressedFunction(screenDefinition, widgetMap, screenIDPrefix));
+		result.append(createUpdateViewsFunction(screenDefinition, widgetMap, screenIDPrefix));
 		result.append(new JSReplyFunctionCreatorLogic().createProcessReplyFunction(screenDefinition, screenIDPrefix));
 
 		File fileName = new File(dir, GeneratorUtil.getJSPart1Filename(screenDefinition));
 		FileUtil.writeStringToFile(fileName, result.toString());
 
+	}
+
+	private StringBuilder createTableFilters(ScreenDefinition screenDefinition) {
+		StringBuilder result = new StringBuilder();
+		
+		for (TableWidget tableWidget: BaseUtil.getAllTableWidgets(screenDefinition)){
+			String filterName = GeneratorUtil.createJSTableFilterMethodName(screenDefinition, tableWidget);
+			String topItemIndexName = GeneratorUtil.getJSTableFilterTopItemIndexVariableName(screenDefinition, tableWidget);
+			String filteredIDsName = GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget);
+
+			result.append("app.filter('" + filterName + "', function () {\n");
+			result.append("    return function (dataArray, filterTextRaw) {\n");
+			result.append("        if (!dataArray) return;\n");
+			result.append("        /* when term is cleared, return full array*/\n");
+			result.append("        if (!filterTextRaw) {\n");
+			result.append("            " + topItemIndexName + " = null;\n");
+			result.append("            " + filteredIDsName + " = null;\n");
+			result.append("            return dataArray\n");
+			result.append("        }\n");
+			result.append("        var filterText = filterTextRaw.trim().toLowerCase();\n");
+			result.append("        if (filterText.length == 0){\n");
+			result.append("            " + topItemIndexName + " = null;\n");
+			result.append("            " + filteredIDsName + " = null;\n");
+			result.append("            return dataArray\n");
+			result.append("        }\n");
+			
+			result.append("        var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+			
+			
+			writeTableColumnNames(result, screenDefinition, tableWidget, "        ");
+			int numberOfColumns = BaseUtil.toEmptyCollectionIfNull(tableWidget.getColumns()).size();
+			
+			result.append("        var searchTermsMap = createSearchTermsMap(filterText, columnNames);\n");
+//			result.append("        console.log(\"filter:  = columnNames: \" + JSON.stringify(columnNames));\n");
+//			result.append("        console.log(\"filter:  = searchTermsMap: \" + JSON.stringify(searchTermsMap));\n");
+			result.append("\n");
+			result.append("        var result = dataArray.filter(function(item){\n");
+
+			result.append("            existingItems = new Object();\n");
+			for (int columnIndex = 0; columnIndex < numberOfColumns; columnIndex ++){
+				TableWidgetColumn column = tableWidget.getColumns().get(columnIndex);
+				result.append("            existingItems[\"c" + columnIndex + "\"] = ");
+				boolean itemsWritten = false;
+				boolean first = true;
+				for (TableWidgetItem tableItem: BaseUtil.toEmptyCollectionIfNull(column.getTableItems())){
+					String textAttribute = tableItem.getTextDTOField();
+					if (textAttribute == null){
+						textAttribute = tableItem.getTooltipDTOField();
+					}
+					if (textAttribute != null){
+						itemsWritten = true;
+						if (first){
+							first = false;
+						} else{
+							result.append(" + \"\\n\"");
+						}
+						result.append("item." + textAttribute);
+					}
+				}
+				if (!itemsWritten){
+					result.append("\"\"");
+				}
+				result.append(";\n");
+			}
+			
+//			result.append("            console.log(\"filter:  = existingItems: \" + JSON.stringify(existingItems));\n");
+			result.append("\n");
+			result.append("            if (filterBySearchTerms(existingItems, searchTermsMap)){\n");
+//			result.append("                console.log(\"filter: match!\");\n");
+			result.append("                return true;\n");
+			result.append("            } else {\n");
+//			result.append("                console.log(\"filter: no match\");\n");
+			result.append("                return false;\n");
+			result.append("            }\n");
+
+			
+			result.append("        });\n");
+			String idPropertyName = tableWidget.getIDDTOField();
+			result.append("        if ((result != null) && (result.length != 0)){\n");
+			result.append("            " + topItemIndexName + " = findIndex(dataArray, result[0]." + idPropertyName + ", \"" + idPropertyName + "\");\n");
+			result.append("            " + filteredIDsName + " = createListFromProperty(result, \"" + idPropertyName + "\");\n");
+			result.append("        } else {\n");
+			result.append("            " + topItemIndexName + " = null;\n");
+			result.append("            " + idPropertyName + " = null;\n");
+			result.append("        }\n");
+			result.append("        return result;\n");
+			result.append("    }\n");
+			result.append("});\n");
+		}
+		
+		return result;
+	}
+
+	private void writeTableColumnNames(StringBuilder result, ScreenDefinition screenDefinition, TableWidget tableWidget, String indent) {
+		int numberOfColumns = BaseUtil.toEmptyCollectionIfNull(tableWidget.getColumns()).size();
+		result.append(indent + "var columnNames = [");
+		for (int columnIndex = 0; columnIndex < numberOfColumns; columnIndex ++){
+			if (columnIndex > 0){
+				result.append(indent + "                 , ");
+			}
+			result.append("scope." + GeneratorUtil.getJSTableColumnTextVariableName(screenDefinition, tableWidget, columnIndex));
+			if (columnIndex < numberOfColumns - 1){
+				result.append("\n");
+			}
+		}
+		result.append("];\n");
+	}
+	
+	private StringBuilder createTableFilterTextKeyDownMethods(ScreenDefinition screenDefinition) {
+		StringBuilder result = new StringBuilder();
+		
+		for (TableWidget tableWidget: BaseUtil.getAllTableWidgets(screenDefinition)){
+			result.append(GeneratorUtil.getJSTableFilterKeyDownMethodName(screenDefinition, tableWidget) + " = function (event) {\n");
+			String topIndexVariableName = GeneratorUtil.getJSTableFilterTopItemIndexVariableName(screenDefinition, tableWidget);
+			result.append("    if (event.keyCode == 13){\n");
+			result.append("        var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+			result.append("        if (" + topIndexVariableName + " != null){\n");
+//			result.append("            scope." + GeneratorUtil.createJSTableRowClickMethodName(screenDefinition, tableWidget) + "(" + topIndexVariableName + ", event);\n");
+			result.append("            scope." + GeneratorUtil.createJSTableRowClickMethodName(screenDefinition, tableWidget) + "(0, event);\n");
+			result.append("        }\n");
+			result.append("        return;\n");
+			result.append("    }\n");
+			result.append("\n");  
+			result.append("    if ((event.keyCode != 32) || (!event.ctrlKey)){\n");
+			result.append("        return;\n");
+			result.append("    }\n");
+			result.append("    event.preventDefault();\n");
+			result.append("    var inputField = document.getElementById(\"" + GeneratorUtil.getJSTableFilterTextElementID(screenDefinition, tableWidget) + "\");\n");
+			result.append("    var currentText = inputField.value;\n");
+			result.append("    var cursorPos = inputField.selectionStart;\n");
+			result.append("    var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+			writeTableColumnNames(result, screenDefinition, tableWidget, "    ");
+			result.append("    try{\n");
+			result.append("        var updatedTextAndCursor = updateTextAndCursorToNextColumn(currentText, cursorPos, columnNames);\n");
+			result.append("\n");
+			result.append("        inputField.value = updatedTextAndCursor.text;\n");
+			result.append("        inputField.selectionStart = updatedTextAndCursor.cursorPos;\n");
+			result.append("        inputField.selectionEnd = updatedTextAndCursor.cursorPos;\n");
+			result.append("\n");
+			result.append("        scope[\"" + GeneratorUtil.getJSTableFilterTextVariableName(screenDefinition, tableWidget) + "\"] = updatedTextAndCursor.text;\n");
+			result.append("        setTimeout(function() {scope.$digest();}, 0);\n");
+			result.append("    } catch (e){\n");
+			result.append("        console.log(\"error: \" + e + \", \" + JSON.stringify(e));\n");
+			result.append("    }\n");
+			result.append("}\n");
+		}
+		return result;
 	}
 
 	private StringBuilder createFileUploadFunctions(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
@@ -144,7 +304,7 @@ public class JSGeneratorService {
 				result.append("    scope.$apply(function(){\n");
 				result.append("        scope.selectedFile = selection;\n");
 				result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaFileUploadMethodName(i) + "\");\n");
-				result.append(createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
+				result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
 				result.append("        document.getElementById('" + fileUploadEventDataFieldID + "').value = JSON.stringify(request);\n");
 				result.append("        document.getElementById('" + uploadFormID + "').submit();\n");
 				result.append("    });\n");
@@ -158,7 +318,7 @@ public class JSGeneratorService {
 				result.append("    scope.$apply(function(){\n");
 				result.append("        if (scope." + firstIFrameLoadVariableName + " == false){\n");
 				result.append("            var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaFileUploadFinishedMethodName(i) + "\");\n");
-				result.append(createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
+				result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
 				result.append("            " + screenIDPrefix + "executeRequest(request);\n");
 				result.append("        }\n");
 				result.append("        scope." + firstIFrameLoadVariableName + " = false;\n");
@@ -171,10 +331,10 @@ public class JSGeneratorService {
 				result.append("    var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
 				result.append("    scope.$apply(function(){\n");
 				result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaFileUploadMethodName(i) + "\");\n");
-				result.append(createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
+				result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
 				result.append("        var uploadRequest = request;\n");
 				result.append("        request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaFileUploadFinishedMethodName(i) + "\");\n");
-				result.append(createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
+				result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
 				result.append("        var uploadFinishedRequest = request;\n");
 				result.append("        webView.fileUpload(JSON.stringify(uploadRequest), JSON.stringify(uploadFinishedRequest));\n");
 				result.append("    });\n");
@@ -239,7 +399,7 @@ public class JSGeneratorService {
 		result.append("        if ((!singlePageApp) || ($scope.visible)){\n");
 		result.append("            if ($scope." + GeneratorUtil.getJSTimerActiveVariableName(screenDefinition, timer) + ") {\n");
 		result.append("                var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaTimerOccuredMethodName(timer) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, timer, widgetMap, "                "));
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, timer, widgetMap, "                "));
 		result.append("               " + screenIDPrefix + "executeRequest(request);\n");
 		result.append("            }\n");
 		result.append("        }\n");
@@ -400,7 +560,7 @@ public class JSGeneratorService {
 			result.append("    $scope." + GeneratorUtil.getJSSelectBoxChangeMethodName(screenDefinition, i) + " = function (id){\n");
 			result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaSelectBoxChangedMethodName(i) + "\");\n");
 			result.append("        request.parameters[\"" + GeneratorConstants.SELECT_BOX_ROW_ID_PARAMETER_NAME + "\"] = id;\n");
-			result.append(createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
+			result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "        "));
 			result.append("        " + screenIDPrefix + "executeRequest(request);\n");
 			result.append("    }\n");
 		}
@@ -415,7 +575,8 @@ public class JSGeneratorService {
 			result.append("    var converter = new showdown.Converter();\n");
 			result.append("    converter.setOption('tables', 'true');\n");
 			result.append("    converter.setOption('literalMidWordUnderscores', 'true');\n");
-			result.append("    html = converter.makeHtml(text);\n");
+			result.append("    var lineBreakText = text.replace(new RegExp(\"\\n\", \"g\"), \"\\n<br/>\");\n");
+			result.append("    html = converter.makeHtml(lineBreakText);\n");
 			result.append("    target = document.getElementById(\"" + GeneratorUtil.createHTMLMarkdownViewID(screenDefinition, i) + "\");\n");
 			result.append("    target.innerHTML = html;\n");
 			result.append("};\n");
@@ -424,11 +585,40 @@ public class JSGeneratorService {
 		return result;
 	}
 	
+	private StringBuilder createUpdateViewsFunction(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) {
+		StringBuilder result = new StringBuilder();
+		result.append(screenIDPrefix + "updateViews = function(){\n");
+		for (CodeEditorWidget i: BaseUtil.getAllCodeEditorWidgets(screenDefinition)){
+			String variableName = GeneratorUtil.createCodeWidgetVariableName(screenDefinition, i);
+			//: CodeMirror code editors require a call of refresh after set text
+			result.append("    setTimeout(function() {" + variableName + ".refresh();}, 0);\n");
+		}
+		result.append("};\n");
+		result.append("\n");
+		return result;
+	}
+
+	private StringBuilder createOnBackPressedFunction(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
+		StringBuilder result = new StringBuilder();
+			result.append(screenIDPrefix + "backButtonPressed = function(){\n");
+			result.append("    console.log(\"Screen " + screenDefinition.getID() + ": Back pressed.\");\n");
+			for (EventListener i: BaseUtil.getAllEventListenersOfContainer(screenDefinition, EventListenType.BACK_ACTION)){
+				result.append("    var $scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+				result.append("    var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaBackActionMethodName() + "\");\n");
+				result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, i, widgetMap, "    "));
+				result.append("    " + screenIDPrefix + "executeRequest(request);\n");
+			}
+			result.append("};\n");
+			result.append("\n");
+		return result;
+	}
+	
 	private StringBuilder createCreateRequestObjectFunction(ScreenDefinition screenDefinition, String screenIDPrefix) {
 		StringBuilder result = new StringBuilder();
 		result.append(screenIDPrefix + "createRequest = function(actionName){\n");
 		result.append("    request = new Object();\n");
 		result.append("    request.action = actionName;\n");
+		result.append("    request.currentLanguage = currentLanguage;\n");
 		result.append("    request.screenID = \"" + screenDefinition.getID() + "\";\n");
 		result.append("    request.parameters = new Object();\n");
 		result.append("    return request;\n");
@@ -476,6 +666,11 @@ public class JSGeneratorService {
 				}
 			}
 		}
+		
+		for (TableWidget tableWidget: BaseUtil.getAllTableWidgets(screenDefinition)) {
+			result.append(createTableFilterInfoButtonClickMethod(screenDefinition, tableWidget, screenIDPrefix));
+		}
+		
 		return result;
 	}
 
@@ -512,7 +707,7 @@ public class JSGeneratorService {
 		result.append("    $scope." + GeneratorUtil.createJSPluginEventMethodName(screenDefinition, pluginInstance, event) + " = function () {\n");
 
 		result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaPluginEventMethodName(pluginInstance, event) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, pluginInstance, widgetMap, "        "));
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, pluginInstance, widgetMap, "        "));
 		result.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		result.append("    }\n");
 		result.append("\n");
@@ -523,7 +718,7 @@ public class JSGeneratorService {
 		StringBuilder result = new StringBuilder();
 		result.append("    $scope." + GeneratorUtil.createJSOnChangedMethodName(screenDefinition, widget) + " = function (selected) {\n");
 		result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaOnChangedMethodName(widget) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, widget, widgetMap, "        "));
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, widget, widgetMap, "        "));
 		result.append("        request.parameters[\"" + GeneratorConstants.SELECTED_ID_PARAMETER_NAME + "\"] = selected;\n");
 		result.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		result.append(createEventHandlerCode(screenDefinition, widget, screenIDPrefix));
@@ -537,7 +732,7 @@ public class JSGeneratorService {
 		StringBuilder result = new StringBuilder();
 		result.append("    $scope." + GeneratorUtil.createJSButtonClickMethodName(screenDefinition, widget) + " = function () {\n");
 		result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJSButtonClickMethodName(widget) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, widget, widgetMap, "        "));
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, widget, widgetMap, "        "));
 		result.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		result.append(createEventHandlerCode(screenDefinition, widget, screenIDPrefix));
 		result.append("    }\n");
@@ -545,6 +740,24 @@ public class JSGeneratorService {
 		return result;
 	}
 
+	private StringBuilder createTableFilterInfoButtonClickMethod(ScreenDefinition screenDefinition, TableWidget widget, String screenIDPrefix)
+			throws Exception {
+		StringBuilder result = new StringBuilder();
+		result.append("    $scope." + GeneratorUtil.getJSTableFilterOnInfoButtonClickMethodName(screenDefinition, widget) + " = function () {\n");
+		
+		result.append("        var message = new Object();\n");
+		result.append("        message.typeID = 101;\n");
+		result.append("        message.title = \"Quick Filter Info\";\n");
+		result.append("        message.text = \"Type any text to filter. Add preciding '-' to filter out.  Add column name and ':' like 'myColumn:x' to filter in a column.  \";\n");
+		result.append("        message.text += \"Use quotes (\\\") for spaces in column name or texts.  Press enter to select(click) first item in table.  \";\n");
+		result.append("        message.text += \"Press ctrl+space for auto-complete of column names or next column name.\";\n");
+		result.append("\n");
+		result.append("        $scope.showMessage(message);\n");
+		result.append("    }\n");
+		result.append("\n");
+		return result;
+	}
+	
 	private StringBuilder createEventHandlerCode(ScreenDefinition screenDefinition, BasicWidget widget, String screenIDPrefix) throws Exception {
 		StringBuilder result = new StringBuilder();
 		for (EventHandler i : BaseUtil.toEmptyCollectionIfNull(widget.getEventHandlers())) {
@@ -571,70 +784,6 @@ public class JSGeneratorService {
 		return result;
 	}
 
-	private StringBuilder createRequestObjectEventParametersMap(ScreenDefinition screenDefinition, EventParameterContainer eventParameterContainer,
-			SortedMap<String, CellItem> widgetMap, String prefix) throws Exception {
-		StringBuilder result = new StringBuilder();
-
-		if (eventParameterContainer.getEventParameters() == null) {
-			return result;
-		}
-
-		for (EventParameter i : eventParameterContainer.getEventParameters()) {
-			result.append(prefix + "request.parameters[\"");
-
-			if (i.getDTOID() != null) {
-				result.append(i.getDTOID());
-				result.append("\"] = ");
-				result.append(getDTOGetterMethodName(screenDefinition, i.getDTOID()) + "();\n");
-			} else if (i.getPluginVariableName() != null) {
-				String variableName = GeneratorUtil.getJSPluginVariableName(screenDefinition, i.getPluginInstanceID(), i.getPluginVariableName());
-				result.append(variableName);
-				result.append("\"] = ");
-				result.append("$scope." + variableName + ";\n");
-			} else {
-				CellItem referencedWidget = widgetMap.get(i.getWidgetID());
-				if (referencedWidget == null) {
-					throw new Exception("Unknown widget: '" + i.getWidgetID() + "'");
-				}
-
-				result.append(i.getWidgetID() + GeneratorUtil.widgetPropertyToSuffix(i.getWidgetProperty()));
-				result.append("\"] = ");
-
-				if (referencedWidget instanceof BasicWidget) {
-					result.append("$scope.");
-					if (i.getWidgetProperty() == WidgetProperty.TEXT) {
-						result.append(GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, i.getWidgetID()));
-					} else if (i.getWidgetProperty() == WidgetProperty.SELECTED) {
-						result.append(GeneratorUtil.getJSWidgetSelectedVariableName(screenDefinition, i.getWidgetID()));
-					} else {
-						throw new Exception("Unkonwn widget property: " + i.getWidgetProperty());
-					}
-				} else if (referencedWidget instanceof SelectBox) {
-					if (i.getWidgetProperty() == WidgetProperty.SELECTED_ID) {
-						result.append(GeneratorUtil.createJSSelectBoxGetSelectedIDMethodName(screenDefinition, (SelectBox)referencedWidget) + "()");
-					} else {
-						throw new Exception("Unkonwn widget property: " + i.getWidgetProperty());
-					}
-				} else if (referencedWidget instanceof CodeEditorWidget) {
-					String codeEditorObjectVariableName = GeneratorUtil.createCodeWidgetVariableName(screenDefinition, (CodeEditorWidget) referencedWidget);
-					if (i.getWidgetProperty() == WidgetProperty.TEXT) {
-						result.append(codeEditorObjectVariableName + ".getValue()");
-					} else if (i.getWidgetProperty() == WidgetProperty.LINE) {
-						result.append(codeEditorObjectVariableName + ".getCursor().line");
-					} else if (i.getWidgetProperty() == WidgetProperty.POS_IN_LINE) {
-						result.append(codeEditorObjectVariableName + ".getCursor().ch");
-					} else {
-						throw new Exception("Unkonwn code editor widget property: " + i.getWidgetProperty());
-					}
-				} else {
-					throw new Exception("Unexpected widget type: " + referencedWidget.getClass().getSimpleName());
-				}
-				result.append(";\n");
-			}
-
-		}
-		return result;
-	}
 
 //	private StringBuilder createEventParametersString(ScreenDefinition screenDefinition, EventParameterContainer eventParameterContainer, SortedMap<String, CellItem> widgetMap,
 //			boolean alwaysStartWithComma) throws Exception {
@@ -719,24 +868,52 @@ public class JSGeneratorService {
 		}
 		return result;
 	}
+	
+	private StringBuilder createTableGetCheckedRowsMethods(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
+		StringBuilder result = new StringBuilder();
+		for (TableWidget tableWidget : BaseUtil.getAllTableWidgets(screenDefinition)) {
+			if (tableWidget.isRowCheckboxes()){
+				result.append(createTableWidgetGetCheckedAndFilteredIDsMethod(screenDefinition, tableWidget, widgetMap, screenIDPrefix));
+			}
+		}
+		return result;
+	}
 
+	private StringBuilder createTableRowSelectedBoxClickMethods(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
+		StringBuilder result = new StringBuilder();
+		for (TableWidget tableWidget : BaseUtil.getAllTableWidgets(screenDefinition)) {
+			if (tableWidget.isRowCheckboxes()){
+				result.append(createTableWidgetRowSelectBoxClickMethod(screenDefinition, tableWidget, widgetMap, screenIDPrefix));
+			}
+		}
+		return result;
+	}
+	
+	private StringBuilder createTableSelectedItemsObjects(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
+		StringBuilder result = new StringBuilder();
+		for (TableWidget tableWidget : BaseUtil.getAllTableWidgets(screenDefinition)) {
+			if (tableWidget.isRowCheckboxes()){
+				String selectedItemsVariableName = GeneratorUtil.createJSTableRowCheckedIDVariableName(screenDefinition, tableWidget);
+				result.append("    $scope." + selectedItemsVariableName + " = new Object();\n");
+			}
+		}
+		return result;
+	}
+	
 	private StringBuilder createTableWidgetButtonsClickMethod(ScreenDefinition screenDefinition, TableWidgetItem tableItem, TableWidget tableWidget,
 			SortedMap<String, CellItem> widgetMap, String screenIDPrefix) throws Exception {
 		StringBuilder result = new StringBuilder();
 		result.append("    $scope." + GeneratorUtil.createJSTableButtonClickMethodName(screenDefinition, tableWidget, tableItem) + " = function (index, event) {\n");
-		result.append("        event.preventDefault();\n"); // : call prevent
-															// default to mark
-															// this event as
-															// processed (and
-															// not kill the
-															// event because it
-															// may be needed by
-															// the framework or
-															// other components)
+		result.append("        event.preventDefault();\n"); // : execute if the "default was not prevented" which means here that a table button has been clicked
 		result.append("        var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaTableButtonClickMethodName(tableWidget, tableItem) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, tableItem, widgetMap, "        "));
-		result.append("        request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = $scope." + tableWidget.getDTO() + "[index]."
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, tableItem, widgetMap, "        "));
+		String filteredIDsName = GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget);
+		result.append("        if (" + filteredIDsName + " != null){\n");
+		result.append("            request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = " + filteredIDsName + "[index];\n");
+		result.append("        } else {\n");
+		result.append("            request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = $scope." + tableWidget.getDTO() + "[index]."
 				+ tableWidget.getIDDTOField() + ";\n");
+		result.append("        }\n");
 		result.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		result.append("    }\n");
 		return result;
@@ -746,29 +923,81 @@ public class JSGeneratorService {
 			throws Exception {
 		StringBuilder result = new StringBuilder();
 		result.append("    $scope." + GeneratorUtil.createJSTableRowClickMethodName(screenDefinition, tableWidget) + " = function (index, event) {\n");
-		result.append("        if (!event.defaultPrevented) {\n"); // : only
-																	// execute
-																	// if the
-																	// "default
-																	// was not
-																	// prevented"
-																	// which
-																	// means
-																	// here that
-																	// a table
-																	// button
-																	// has been
-																	// clicked
+		result.append("        if (!event.defaultPrevented) {\n"); // : execute if the "default was not prevented" which means here that a table button has been clicked
 		result.append("            var request = " + screenIDPrefix + "createRequest(\"" + GeneratorUtil.createJavaTableRowClickMethodName(tableWidget) + "\");\n");
-		result.append(createRequestObjectEventParametersMap(screenDefinition, tableWidget, widgetMap, "            "));
-		result.append("            request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = $scope." + tableWidget.getDTO() + "[index]."
+		result.append(GeneratorUtil.createRequestObjectEventParametersMap(screenDefinition, tableWidget, widgetMap, "            "));
+		String filteredIDsName = GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget);
+		result.append("            if (" + filteredIDsName + " != null){\n");
+		result.append("                request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = " + filteredIDsName + "[index];\n");
+		result.append("            } else {\n");
+		result.append("                request.parameters[\"" + GeneratorConstants.TABLE_BUTTON_CLICK_ROW_ID_PARAMETER_NAME + "\"] = $scope." + tableWidget.getDTO() + "[index]."
 				+ tableWidget.getIDDTOField() + ";\n");
+		result.append("            }\n");
 		result.append("            " + screenIDPrefix + "executeRequest(request);\n");
 		result.append("        }\n");
 		result.append("    }\n");
 		return result;
 	}
+	
+	private StringBuilder createTableWidgetGetCheckedAndFilteredIDsMethod(ScreenDefinition screenDefinition, TableWidget tableWidget, SortedMap<String, CellItem> widgetMap, String screenIDPrefix)
+		throws Exception {
 
+		StringBuilder result = new StringBuilder();
+		result.append("    " + GeneratorUtil.createJSTableGetCheckedAndFileredIDsMethodName(screenDefinition, tableWidget) + " = function () {\n");
+		result.append("        var result = [];\n");
+		result.append("        var scope = angular.element(document.getElementById('" + GeneratorUtil.getHTMLScreenPanelName(screenDefinition) + "')).scope();\n");
+		String selectedItemsVariableName = GeneratorUtil.createJSTableRowCheckedIDVariableName(screenDefinition, tableWidget);
+		result.append("        if (typeof scope." + selectedItemsVariableName + " == \"undefined\"){\n");
+		result.append("            return result;\n");
+		result.append("        }\n");
+		result.append("        if (scope." + selectedItemsVariableName + ".size == 0){\n");
+		result.append("            return result;\n");
+		result.append("        }\n");
+		result.append("        var visibleIDs = null;\n");
+		String filteredVariableName = GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget);
+		result.append("        if (" + filteredVariableName + " != null){\n");
+		result.append("            visibleIDs = " + filteredVariableName + ";\n");
+		result.append("        } else {\n");
+		result.append("            visibleIDs = createListFromProperty(scope." + tableWidget.getDTO() + ", \"" + tableWidget.getIDDTOField() + "\");\n");
+		result.append("        }\n");
+		result.append("        for (i in visibleIDs){\n");
+		result.append("            var itemID = visibleIDs[i];\n");
+		result.append("            var selected = scope." + selectedItemsVariableName + "[itemID];\n");
+		result.append("            if (selected){\n");
+		result.append("                result.push(itemID);\n");
+		result.append("            }\n");
+		result.append("        }\n");
+		result.append("        return result;\n");
+		result.append("    }\n");
+		result.append("\n");
+		return result;
+	}
+
+	private StringBuilder createTableWidgetRowSelectBoxClickMethod(ScreenDefinition screenDefinition, TableWidget tableWidget, SortedMap<String, CellItem> widgetMap, String screenIDPrefix)
+			throws Exception {
+		StringBuilder result = new StringBuilder();
+		result.append("    $scope." + GeneratorUtil.createJSTableRowSelectBoxClickMethodName(screenDefinition, tableWidget) + " = function (index, event) {\n");
+		result.append("        event.preventDefault();\n"); // : execute if the "default was not prevented" which means here that a table button has been clicked
+		result.append("        var rowID = null\n");
+		String filteredIDsName = GeneratorUtil.getJSTableFilterFilteredIDsVariableName(screenDefinition, tableWidget);
+		result.append("        if (" + filteredIDsName + " != null){\n");
+		result.append("            rowID = " + filteredIDsName + "[index];\n");
+		result.append("        } else {\n");
+		result.append("            rowID = $scope." + tableWidget.getDTO() + "[index]." + tableWidget.getIDDTOField() + ";\n");
+		result.append("        }\n");
+		String selectedItemsVariableName = GeneratorUtil.createJSTableRowCheckedIDVariableName(screenDefinition, tableWidget);
+		result.append("        if ($scope." + selectedItemsVariableName + "[rowID] == true){\n");
+		result.append("            $scope." + selectedItemsVariableName + "[rowID] = false;\n");
+		result.append("        } else {\n");
+		result.append("            $scope." + selectedItemsVariableName + "[rowID] = true;\n");
+		result.append("        } \n");
+		result.append("    }\n");
+		return result;
+	}
+	
+	
+	
+	
 	private StringBuilder createDTOGettersAndSettersCode(ScreenDefinition screenDefinition) {
 		StringBuilder result = new StringBuilder();
 
@@ -786,8 +1015,6 @@ public class JSGeneratorService {
 
 	private String getDTOGetterMethodName(ScreenDefinition screenDefinition, String dtoID) {
 		return GeneratorUtil.getJSDTOGetterMethodName(screenDefinition, dtoID);
-		// return BaseUtil.buildIDWithPrefix(dtoID +
-		// GeneratorConstants.JAVASCRIPT_DTO_SETTER_SUFFIX, "get");
 	}
 
 	private StringBuilder createDTOGetter(ScreenDefinition screenDefinition, DTODeclaration dtoDeclaration) {
@@ -908,10 +1135,10 @@ public class JSGeneratorService {
 		String linePrefix = "    scope.";
 		for (BasicWidget widget : BaseUtil.getAllBasicWidgets(screenDefinition)) {
 			if (widget.getText() != null) {
-				result.append(linePrefix + GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, widget) + " = \"" + widget.getText() + "\";\n");
+				result.append(linePrefix + GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, widget) + " = " + GeneratorUtil.getJSTextOrResource(widget.getText()) + ";\n");
 			}
 			if (widget.getLabelText() != null) {
-				result.append(linePrefix + GeneratorUtil.getJSWidgetLabelVariableName(screenDefinition, widget) + " = \"" + widget.getLabelText() + "\";\n");
+				result.append(linePrefix + GeneratorUtil.getJSWidgetLabelVariableName(screenDefinition, widget) + " = " + GeneratorUtil.getJSTextOrResource(widget.getLabelText()) + ";\n");
 			}
 			if (widget.getType() == BasicWidgetType.PROGRESS_BAR) {
 				result.append(linePrefix + GeneratorUtil.getJSWidgetProgressBarModeVariableName(screenDefinition, widget) + " = \"query\";\n");
@@ -920,7 +1147,7 @@ public class JSGeneratorService {
 				result.append(linePrefix + GeneratorUtil.getJSWidgetSelectedVariableName(screenDefinition, widget) + " = false;\n");
 			}
 			if (BaseUtil.in(widget.getType(), BasicWidgetType.MARKDOWN_VIEW, BasicWidgetType.TEXT_AREA, BasicWidgetType.TEXT_FIELD)){
-				result.append(linePrefix + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + " = \"#ffffff\";\n");
+				result.append(linePrefix + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + " = \"\";\n");
 			}
 			
 			result.append(linePrefix + GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, widget) + " = " + widget.isVisible() + ";\n");
@@ -965,6 +1192,19 @@ public class JSGeneratorService {
 		for (LayoutContainer i : BaseUtil.getAllLayoutContainers(screenDefinition)) {
 			if (i.getID() != null) {
 				result.append(linePrefix + GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, i.getID()) + " = " + i.isVisible() + ";\n");
+			}
+		}
+		
+		for (TableWidget table: BaseUtil.getAllTableWidgets(screenDefinition)){
+			int tableCoumnIndex = 0;
+			for (TableWidgetColumn column : table.getColumns()) {
+				result.append(linePrefix + GeneratorUtil.getJSTableColumnTextVariableName(screenDefinition, table, tableCoumnIndex) + " = " + GeneratorUtil.getJSTextOrResource(column.getText()) + ";\n");
+				tableCoumnIndex ++;
+				for (TableWidgetItem tableWidgetItem : column.getTableItems()){
+					if (BaseUtil.in(tableWidgetItem.getType(), TableWidgetType.BUTTON, TableWidgetType.IMAGE_BUTTON)){
+						result.append(linePrefix + GeneratorUtil.getJSTableWidgetTextVariableName(screenDefinition, table, tableWidgetItem) + " = " + GeneratorUtil.getJSTextOrResource(tableWidgetItem.getText()) + ";\n");					
+					}
+				}
 			}
 		}
 		

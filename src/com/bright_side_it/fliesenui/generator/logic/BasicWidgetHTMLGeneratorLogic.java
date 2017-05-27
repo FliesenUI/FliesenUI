@@ -1,10 +1,12 @@
 package com.bright_side_it.fliesenui.generator.logic;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
+import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.generator.model.HTMLTag;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.EventHandler;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSource;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSourceContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
@@ -61,7 +63,7 @@ public class BasicWidgetHTMLGeneratorLogic {
         if (widget.getHeight() != null){
         	styleString += " height:" + widget.getHeight() + "px;";
         }
-        styleString += "  background: {{" + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + "}}";
+        styleString += "   {{" + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + "}}";
         HTMLTag resultTag = null;
         if (widget.getLabelText() != null) {
             HTMLTag inputContainer = tagLogic.addTag(parentTag, "md-input-container", null, "class", "md-block");
@@ -336,7 +338,7 @@ public class BasicWidgetHTMLGeneratorLogic {
     	String showVariable = GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, widget);
     	String backgroundColorVariable = GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget);
 		HTMLTag cardContainerTag = tagLogic.addTag(parentTag, "md-card", null, "ng-show", showVariable);
-		HTMLTag colorContainerTag = tagLogic.addTag(cardContainerTag, "span", null, "style", "background: {{" + backgroundColorVariable + "}}");
+		HTMLTag colorContainerTag = tagLogic.addTag(cardContainerTag, "span", null, "style", "{{" + backgroundColorVariable + "}}");
 		tagLogic.addTag(colorContainerTag, "span", "", "id", GeneratorUtil.createHTMLMarkdownViewID(screenDefinition, widget));
     }
     
@@ -395,7 +397,7 @@ public class BasicWidgetHTMLGeneratorLogic {
         //: "position: relative;top: 50%;transform: translateY(-50%);-webkit-transform: translateY(-50%);" is needed to center vertically
         //        String styleString = "width:99%;position: relative;top: 50%;transform: translateY(-50%);-webkit-transform: translateY(-50%);";
         String styleString = "width:99%;";
-        styleString += " background: {{" + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + "}}";
+        styleString += " {{" + GeneratorUtil.getJSWidgetBackgroundColorVariableName(screenDefinition, widget) + "}}";
         String variableName = GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, widget);
         String showVariable = GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, widget);
         HTMLTag resultTag = null;
@@ -413,6 +415,21 @@ public class BasicWidgetHTMLGeneratorLogic {
         	if (Boolean.TRUE.equals(widget.getSelectOnFocus())){
         		tagLogic.setAttribute(resultTag, "md-select-on-focus", "");
         	}
+        }
+        
+        String keyUpString = null;
+        for (EventHandler i: BaseUtil.toEmptyCollectionIfNull(widget.getEventHandlers())){
+        	if (i.getButtonToClick() != null){
+        		if (keyUpString == null){
+        			keyUpString = "$event.keyCode == 13";
+        		}
+        		BasicWidget buttonWidget = BaseUtil.getBasicWidgetWithIDOptional(screenDefinition, i.getButtonToClick());
+        		String clickMethod = GeneratorUtil.createJSButtonClickMethodName(screenDefinition, buttonWidget);
+        		keyUpString += " && " + clickMethod + "()";
+        	}
+        }
+        if (keyUpString != null){
+        	tagLogic.setAttribute(resultTag, "ng-keyup", keyUpString + ";");
         }
 
     }

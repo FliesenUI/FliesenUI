@@ -1,5 +1,9 @@
 package com.bright_side_it.fliesenui.base.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 public class TextUtil {
 
     public static int toLine(String text, int posInText) {
@@ -154,6 +158,73 @@ public class TextUtil {
 		}
 		return text;
 	}
+	
+	protected static List<String> toLines(String text){
+		List<String> result = new ArrayList<String>();
+		String lastToken = null;
+		StringTokenizer stringTokenizer = new StringTokenizer(text, "\n", true);
+		while (stringTokenizer.hasMoreTokens()){
+			lastToken = stringTokenizer.nextToken(); 
+			System.out.println("lastToken = '" + lastToken.replace("\n", "\\n") + "'");
+			if (!lastToken.equals("\n")){
+				result.add(lastToken);
+			}
+		}
+		if ("\n".equals(lastToken)){
+			result.add("");
+		}
+		return result;
+	}
 
+	protected static String toText(List<String> lines) {
+		if ((lines.size() == 1) && (lines.get(0).isEmpty())){
+			return "\n";
+		}
+		StringBuilder result = new StringBuilder();
+		int index = 0;
+		for (String i: lines){
+			result.append(i);
+			if (index < lines.size() - 1){
+				result.append("\n");
+			}
+			index ++;
+		}
+		return result.toString();
+	}
+
+	public static TextAndCursorPos copyLineDown(TextAndCursorPos textAndCursorPos){
+		List<String> lines = toLines(textAndCursorPos.getText());
+		lines.add(textAndCursorPos.getLine(), lines.get(textAndCursorPos.getLine()));
+		return new TextAndCursorPos(toText(lines), textAndCursorPos.getLine() + 1, textAndCursorPos.getPosInLine());
+	}
+	
+	public static TextAndCursorPos copyLineUp(TextAndCursorPos textAndCursorPos){
+		List<String> lines = toLines(textAndCursorPos.getText());
+		lines.add(textAndCursorPos.getLine(), lines.get(textAndCursorPos.getLine()));
+		return new TextAndCursorPos(toText(lines), textAndCursorPos.getLine(), textAndCursorPos.getPosInLine());
+	}
+	
+	public static TextAndCursorPos moveLineUp(TextAndCursorPos textAndCursorPos){
+		if (textAndCursorPos.getLine() <= 0){
+			return null;
+		}
+		List<String> lines = toLines(textAndCursorPos.getText());
+		if (textAndCursorPos.getLine() >= lines.size()){
+			return null;
+		}
+		String lineToMove = lines.remove(textAndCursorPos.getLine());
+		lines.add(textAndCursorPos.getLine() - 1, lineToMove);
+		return new TextAndCursorPos(toText(lines), textAndCursorPos.getLine() - 1, textAndCursorPos.getPosInLine());
+	}
+	
+	public static TextAndCursorPos moveLineDown(TextAndCursorPos textAndCursorPos){
+		List<String> lines = toLines(textAndCursorPos.getText());
+		if (textAndCursorPos.getLine() >= lines.size() - 1){
+			return null;
+		}
+		String lineToMove = lines.remove(textAndCursorPos.getLine());
+		lines.add(textAndCursorPos.getLine() + 1, lineToMove);
+		return new TextAndCursorPos(toText(lines), textAndCursorPos.getLine() + 1, textAndCursorPos.getPosInLine());
+	}
 
 }

@@ -2,16 +2,19 @@ package com.bright_side_it.fliesenui.validation.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.dto.dao.DTODefinitionDAO;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.dto.model.DTODefinitionDAOResult;
+import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.plugin.dao.PluginDefinitionDAO;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinitionDAOResult;
 import com.bright_side_it.fliesenui.project.dao.ProjectDefinitionDAO;
@@ -22,6 +25,8 @@ import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
+import com.bright_side_it.fliesenui.stringres.model.StringResource;
+import com.bright_side_it.fliesenui.stringres.model.StringResourceItem;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 
 public class ValidationUtil {
@@ -42,6 +47,18 @@ public class ValidationUtil {
         }
         List<ResourceDefinitionProblem> problemList = project.getScreenDefinitionProblemsMap().get(screenDefinition.getID());
         problemList.add(createResourceDefinitionProblem(nodePath, attribute, type, message));
+    }
+    
+    public static void addError(Project project, StringResource stringResource, NodePath nodePath, String attribute,
+    		ProblemType type, String message) {
+    	if (project.getStringResourceProblemsMap() == null) {
+    		project.setStringResourceProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
+    	}
+    	if (project.getStringResourceProblemsMap().get(stringResource.getID()) == null) {
+    		project.getStringResourceProblemsMap().put(stringResource.getID(), new ArrayList<ResourceDefinitionProblem>());
+    	}
+    	List<ResourceDefinitionProblem> problemList = project.getStringResourceProblemsMap().get(stringResource.getID());
+    	problemList.add(createResourceDefinitionProblem(nodePath, attribute, type, message));
     }
     
     public static void addError(Project project, DTODefinition dtoDefinition, NodePath nodePath, String attribute,
@@ -132,5 +149,22 @@ public class ValidationUtil {
 		return BaseUtil.getDTOFieldBasicType(project, screenDefinition, dtoString) != null;
 	}
 
-
+	public static boolean isTextOrTextResourceValid(Project project, String text){
+		if (text == null){
+			return true;
+		}
+		if (text.startsWith(BaseConstants.STRING_RESOURCE_PREFIX)){
+			StringResource map = project.getStringResourceMap().get(BaseConstants.DEFAULT_LANGUAGE_ID);
+			if (map == null){
+				return false;
+			}
+			Map<String, StringResourceItem> strings = map.getStrings();
+			if (strings == null){
+				return false;
+			}
+			return strings.containsKey(text.substring(BaseConstants.STRING_RESOURCE_PREFIX.length()));
+		}
+		return true;
+	}
+	
 }

@@ -2,7 +2,7 @@ package com.bright_side_it.fliesenui.generator.model;
 
 public class ReplyToCallTranslationParameter {
     public enum DataType {
-        STRING, INT, BOOLEAN
+        STRING, INT, BOOLEAN, LIST_OF_STRING, CHARACTER, KEY_MODIFIER
     }
 
     private String key;

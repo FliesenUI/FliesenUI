@@ -2,6 +2,7 @@ package generated.fliesenui.core;
 
 public class FLUIClientPropertiesDTO {
    	private String userAgent;
+   	private String navigatorLanguage;
    	private int screenAvailableWidthInPixels;
    	private int screenAvailableHeightInPixels;
    	private int screenWidthInPixels;
@@ -120,6 +121,17 @@ public class FLUIClientPropertiesDTO {
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+	
+	/**
+	 * @return A String, representing the language version of the browser.  Examples of valid language codes are: "en", "en-US", "de", "fr"
+	 */
+	public String getNavigatorLanguage() {
+		return navigatorLanguage;
+	}
+	public void setNavigatorLanguage(String navigatorLanguage) {
+		this.navigatorLanguage = navigatorLanguage;
+	}
 
+	
 	
 }

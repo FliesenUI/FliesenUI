@@ -6,21 +6,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 
-import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.BasicType;
+import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter;
-import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter.DataType;
+import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginEvent;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener;
+import com.bright_side_it.fliesenui.screendefinition.model.EventListener.EventListenType;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameter;
+import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
@@ -28,10 +32,8 @@ import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetColumn;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem;
-import com.bright_side_it.fliesenui.screendefinition.model.Timer;
-import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem.TableWidgetType;
+import com.bright_side_it.fliesenui.screendefinition.model.Timer;
 
 public class RequestToCallTranslationBuilder {
     public List<RequestToCallTranslation> buildTranslations(Project project, ScreenDefinition screenDefinition) throws Exception {
@@ -45,14 +47,16 @@ public class RequestToCallTranslationBuilder {
         result.addAll(createAllTableButtonClickedTranslations(project, screenDefinition, widgetMap));
         result.addAll(createAllTableRowClickedTranslations(project, screenDefinition, widgetMap));
         result.addAll(createAllSelectBoxTranslations(project, screenDefinition, widgetMap));
-        result.addAll(createAllCodeEditorTranslations(screenDefinition, widgetMap));
+//        result.addAll(createAllCodeEditorTranslations(screenDefinition, widgetMap));
         result.addAll(createPluginEventTranslations(project, screenDefinition, widgetMap));
         result.add(createOnLoadedTranslation(project, screenDefinition));
         result.addAll(createFileUploadTranslations(project, screenDefinition, widgetMap));
+        result.addAll(createAllEventListenerTranslations(project, screenDefinition, widgetMap));
 
 
         result.add(createInputDialogResultTranslation(screenDefinition, widgetMap));
         result.add(createConfirmDialogResultTranslation(screenDefinition, widgetMap));
+        result.add(createListChooserResultTranslation(screenDefinition, widgetMap));
         return result;
     }
 
@@ -78,6 +82,17 @@ public class RequestToCallTranslationBuilder {
         return result;
     }
 
+    private RequestToCallTranslation createListChooserResultTranslation(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap) {
+    	RequestToCallTranslation result = new RequestToCallTranslation();
+    	result.setActionName(GeneratorConstants.REQUEST_ACTION_ON_LIST_CHOOSER_RESULT);
+    	result.setMethodName(GeneratorConstants.JAVA_METHOD_NAME_ON_LIST_CHOOSER_RESULT);
+    	List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
+    	result.setParameter(parameter);
+    	parameter.add(createParameter("referenceID", DataType.STRING));
+    	parameter.add(createParameter("selectedIDs", DataType.LIST_OF_STRING));
+    	return result;
+    }
+    
     private RequestToCallTranslation createTranslation(String actionName, String methodName) {
         RequestToCallTranslation result = new RequestToCallTranslation();
         result.setActionName(actionName);
@@ -100,6 +115,39 @@ public class RequestToCallTranslationBuilder {
         return result;
     }
 
+    private List<RequestToCallTranslation> createAllEventListenerTranslations(Project project, ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap)
+    		throws Exception {
+    	List<RequestToCallTranslation> result = new ArrayList<RequestToCallTranslation>();
+    	for (EventListener i: BaseUtil.getAllEventListenersOfContainer(screenDefinition, EventListenType.BACK_ACTION)){
+			RequestToCallTranslation resultItem = new RequestToCallTranslation();
+			resultItem.setActionName(GeneratorUtil.createJavaBackActionMethodName());
+			resultItem.setMethodName(GeneratorUtil.createJavaBackActionMethodName());
+			resultItem.setParameter(createParameters(project, screenDefinition, i, widgetMap));
+			result.add(resultItem);
+    	}
+    	
+    	for (CodeEditorWidget codeEditor : BaseUtil.getAllCodeEditorWidgets(screenDefinition)){
+        	List<EventListener> eventListeners = BaseUtil.getAllEventListenersOfContainer(codeEditor, EventListenType.KEY_PRESS, EventListenType.KEY_DOWN);
+        	if (!eventListeners.isEmpty()) {
+        		RequestToCallTranslation resultItem = new RequestToCallTranslation();
+        		resultItem.setKeyEventMethod(true);
+        		resultItem.setActionName(GeneratorUtil.createJavaKeyEventActionMethodName(codeEditor));
+        		resultItem.setMethodName(GeneratorUtil.createJavaKeyEventActionMethodName(codeEditor));
+                List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
+//                parameter.add(createParameter(GeneratorConstants.KEY_MODIFIER_PARAMETER_NAME, DataType.KEY_MODIFIER));
+//                parameter.add(createParameter(GeneratorConstants.KEY_CHAR_PARAMETER_NAME, DataType.CHARACTER));
+//                parameter.add(createParameter(GeneratorConstants.KEY_CODE_PARAMETER_NAME, DataType.INT));                
+//                parameter.add(createParameter(GeneratorConstants.EDITOR_TEXT_PARAMETER_NAME, DataType.STRING));
+//                parameter.add(createParameter(GeneratorConstants.LINE_PARAMETER_NAME, DataType.INT));
+//                parameter.add(createParameter(GeneratorConstants.POS_IN_LINE_PARAMETER_NAME, DataType.INT));
+        		parameter.addAll(createParameters(project, screenDefinition, eventListeners.get(0), widgetMap));
+        		resultItem.setParameter(parameter);
+        		result.add(resultItem);
+        	}
+    	}
+    	return result;
+    }
+    
     private List<RequestToCallTranslation> createFileUploadTranslations(Project project, ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap)
     		throws Exception {
     	List<RequestToCallTranslation> result = new ArrayList<RequestToCallTranslation>();
@@ -256,39 +304,39 @@ public class RequestToCallTranslationBuilder {
     	return result;
     }
     
-    private List<RequestToCallTranslation> createAllCodeEditorTranslations(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap) {
-        List<RequestToCallTranslation> result = new ArrayList<RequestToCallTranslation>();
-        for (CodeEditorWidget i : BaseUtil.getAllCodeEditorWidgets(screenDefinition)) {
-            result.add(createCodeEditorContextAssistTranslation(i));
-            result.add(createCodeEditorSaveTranslation(i));
+//    private List<RequestToCallTranslation> createAllCodeEditorTranslations(ScreenDefinition screenDefinition, SortedMap<String, CellItem> widgetMap) {
+//        List<RequestToCallTranslation> result = new ArrayList<RequestToCallTranslation>();
+//        for (CodeEditorWidget i : BaseUtil.getAllCodeEditorWidgets(screenDefinition)) {
+//            result.add(createCodeEditorContextAssistTranslation(i));
+//            result.add(createCodeEditorSaveTranslation(i));
+//
+//        }
+//        return result;
+//    }
 
-        }
-        return result;
-    }
-
-    private RequestToCallTranslation createCodeEditorContextAssistTranslation(CodeEditorWidget codeEditor) {
-        RequestToCallTranslation resultItem = new RequestToCallTranslation();
-        String javaMethodName = GeneratorUtil.getContextAssistListenerMethodName(codeEditor);
-        resultItem.setActionName(javaMethodName);
-        resultItem.setMethodName(javaMethodName);
-        List<ReplyToCallTranslationParameter> parameters = new ArrayList<>();
-        resultItem.setParameter(parameters);
-        parameters.add(createParameter("editorText", DataType.STRING));
-        parameters.add(createParameter("line", DataType.INT));
-        parameters.add(createParameter("posInLine", DataType.INT));
-        return resultItem;
-    }
-
-    private RequestToCallTranslation createCodeEditorSaveTranslation(CodeEditorWidget codeEditor) {
-        RequestToCallTranslation resultItem = new RequestToCallTranslation();
-        String javaMethodName = GeneratorUtil.getSaveListenerMethodName(codeEditor);
-        resultItem.setActionName(javaMethodName);
-        resultItem.setMethodName(javaMethodName);
-        List<ReplyToCallTranslationParameter> parameters = new ArrayList<>();
-        resultItem.setParameter(parameters);
-        parameters.add(createParameter("editorText", DataType.STRING));
-        return resultItem;
-    }
+//    private RequestToCallTranslation createCodeEditorContextAssistTranslation(CodeEditorWidget codeEditor) {
+//        RequestToCallTranslation resultItem = new RequestToCallTranslation();
+//        String javaMethodName = GeneratorUtil.getContextAssistListenerMethodName(codeEditor);
+//        resultItem.setActionName(javaMethodName);
+//        resultItem.setMethodName(javaMethodName);
+//        List<ReplyToCallTranslationParameter> parameters = new ArrayList<>();
+//        resultItem.setParameter(parameters);
+//        parameters.add(createParameter("editorText", DataType.STRING));
+//        parameters.add(createParameter("line", DataType.INT));
+//        parameters.add(createParameter("posInLine", DataType.INT));
+//        return resultItem;
+//    }
+//
+//    private RequestToCallTranslation createCodeEditorSaveTranslation(CodeEditorWidget codeEditor) {
+//        RequestToCallTranslation resultItem = new RequestToCallTranslation();
+//        String javaMethodName = GeneratorUtil.getSaveListenerMethodName(codeEditor);
+//        resultItem.setActionName(javaMethodName);
+//        resultItem.setMethodName(javaMethodName);
+//        List<ReplyToCallTranslationParameter> parameters = new ArrayList<>();
+//        resultItem.setParameter(parameters);
+//        parameters.add(createParameter("editorText", DataType.STRING));
+//        return resultItem;
+//    }
 
     private ReplyToCallTranslationParameter createParameter(String key, DataType dataType) {
         ReplyToCallTranslationParameter result = new ReplyToCallTranslationParameter();
@@ -335,6 +383,12 @@ public class RequestToCallTranslationBuilder {
                 	} else {
                 		throw new Exception("Unkonwn select box property: " + i.getWidgetProperty());
                 	}
+                } else if (referencedWidget instanceof TableWidget){ 
+                	if (i.getWidgetProperty() == WidgetProperty.CHECKED_ROW_IDS) {
+                		resultItem.setDataType(DataType.LIST_OF_STRING);
+                	} else {
+                		throw new Exception("Unkonwn table widget property: " + i.getWidgetProperty());
+                	}
                 } else if (referencedWidget instanceof CodeEditorWidget) {
                     if (i.getWidgetProperty() == WidgetProperty.TEXT) {
                         resultItem.setDataType(DataType.STRING);
@@ -346,7 +400,11 @@ public class RequestToCallTranslationBuilder {
                         throw new Exception("Unkonwn code editor widget property: " + i.getWidgetProperty());
                     }
                 } else {
-                    throw new Exception("Unexpected widget type: " + referencedWidget.getClass().getSimpleName());
+                	if (referencedWidget == null){
+                		throw new Exception("Unexpected widget type. Referenced widget is null");
+                	} else {
+                		throw new Exception("Unexpected widget type: " + referencedWidget.getClass().getSimpleName());
+                	}
                 }
             }
         }

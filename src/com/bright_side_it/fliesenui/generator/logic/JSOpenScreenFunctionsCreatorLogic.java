@@ -103,6 +103,7 @@ public class JSOpenScreenFunctionsCreatorLogic {
 			result.append("            scope.$apply(function(){\n");
 			result.append("                scope.visible = true;\n");
 			result.append("            });\n");
+			result.append("            currentScreenID = \"" + i.getID() + "\";\n");
 			result.append("            " + screenIDPrefix + "executeOnLoadRequest();\n");
 			result.append("        }\n");
     	}

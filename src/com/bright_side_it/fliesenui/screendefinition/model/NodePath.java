@@ -5,7 +5,7 @@ import java.util.List;
 
 public class NodePath {
     public enum DefinitionDocumentType {
-        SCREEN, DTO, PROJECT, PLUGIN
+        SCREEN, DTO, PROJECT, PLUGIN, STRING_RESOURCE
     }
 
     private String topElementID;

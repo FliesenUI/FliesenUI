@@ -2,7 +2,7 @@ package com.bright_side_it.fliesenui.screendefinition.model;
 
 import java.util.List;
 
-public class BasicWidget implements CellItem, EventParameterContainer, ImageSourceContainer, EventHandlerContainer {
+public class BasicWidget implements CellItem, EventParameterContainer, ImageSourceContainer, EventHandlerContainer /*, EventListenerContainer*/ {
     public enum BasicWidgetType {
         LABEL, BUTTON, IMAGE_BUTTON, IMAGE, TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, FILE_UPLOAD, MARKDOWN_VIEW
     }
@@ -27,6 +27,7 @@ public class BasicWidget implements CellItem, EventParameterContainer, ImageSour
     private List<EventHandler> eventHandlers;
     private Boolean scrollToBottom;
     private Boolean selectOnFocus;
+//    private List<EventListener> eventListeners;
 
     @Override
     public NodePath getNodePath() {
@@ -163,6 +164,13 @@ public class BasicWidget implements CellItem, EventParameterContainer, ImageSour
 	public void setSelectOnFocus(Boolean selectOnFocus) {
 		this.selectOnFocus = selectOnFocus;
 	}
-
+//
+//	public List<EventListener> getEventListeners() {
+//		return eventListeners;
+//	}
+//
+//	public void setEventListeners(List<EventListener> eventListeners) {
+//		this.eventListeners = eventListeners;
+//	}
 
 }

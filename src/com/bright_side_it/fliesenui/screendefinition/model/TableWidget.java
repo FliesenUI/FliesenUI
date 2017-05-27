@@ -16,6 +16,9 @@ public class TableWidget implements CellItem, EventParameterContainer {
     private NodePath nodePath;
     private Integer contentHeight;
     private List<EventParameter> eventParameters;
+    private boolean showColumnHeader;
+    private boolean showFilter;
+    private boolean rowCheckboxes;
 
     @Override
     public NodePath getNodePath() {
@@ -93,4 +96,28 @@ public class TableWidget implements CellItem, EventParameterContainer {
 		this.backgroundColorDTOField = backgroundColorDTOField;
 	}
 
+	public boolean isShowColumnHeader() {
+		return showColumnHeader;
+	}
+
+	public void setShowColumnHeader(boolean showColumnHeader) {
+		this.showColumnHeader = showColumnHeader;
+	}
+
+	public boolean isShowFilter() {
+		return showFilter;
+	}
+
+	public void setShowFilter(boolean showFilter) {
+		this.showFilter = showFilter;
+	}
+
+	public boolean isRowCheckboxes() {
+		return rowCheckboxes;
+	}
+
+	public void setRowCheckboxes(boolean rowCheckboxes) {
+		this.rowCheckboxes = rowCheckboxes;
+	}
+	
 }

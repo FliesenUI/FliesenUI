@@ -1,19 +1,19 @@
 package com.bright_side_it.fliesenui.project.logic;
 
-import com.bright_side_it.fliesenui.project.model.DefinitionResource;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceFormat;
-import com.bright_side_it.fliesenui.project.model.DefinitionResource.ResourceType;
+import com.bright_side_it.fliesenui.project.model.ProjectResource;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
+import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
 import com.google.gson.Gson;
 
 public class DefinitionResourceLogic {
-    public String toString(DefinitionResource resourceInfo) {
+    public String toString(ProjectResource resourceInfo) {
         return new Gson().toJson(resourceInfo);
         //        return resourceInfo.getResourceType() + STRING_REPRESANTATION_SEPARATOR + resourceInfo.getId();
     }
 
-    public DefinitionResource fromString(String string) throws Exception {
+    public ProjectResource fromString(String string) throws Exception {
         try {
-            return new Gson().fromJson(string, DefinitionResource.class);
+            return new Gson().fromJson(string, ProjectResource.class);
         } catch (Exception e) {
             throw new Exception("Could not read DefinitionResource from string >>" + string + "<<", e);
         }
@@ -28,8 +28,8 @@ public class DefinitionResourceLogic {
         return toString(create(resourceType, resourceFormat, id));
     }
 
-    public DefinitionResource create(ResourceType resourceType, ResourceFormat resourceFormat, String id) {
-        DefinitionResource definitionResource = new DefinitionResource();
+    public ProjectResource create(ResourceType resourceType, ResourceFormat resourceFormat, String id) {
+        ProjectResource definitionResource = new ProjectResource();
         definitionResource.setResourceType(resourceType);
         definitionResource.setResourceFormat(resourceFormat);
         definitionResource.setId(id);
@@ -47,6 +47,8 @@ public class DefinitionResourceLogic {
 		case PROJECT:
 			return ResourceFormat.XML;
 		case SCREEN:
+			return ResourceFormat.XML;
+		case STRING_RESOURCE:
 			return ResourceFormat.XML;
 		default:
 			throw new Exception("Unknown resource type: " + type);

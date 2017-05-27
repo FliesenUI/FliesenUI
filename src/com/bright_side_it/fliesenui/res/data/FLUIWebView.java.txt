@@ -13,6 +13,8 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
+import generated.fliesenui.core.JarImageStreamURLConnection;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
@@ -34,11 +36,14 @@ public class FLUIWebView extends Region {
     private int height;
     private static final String PROTOCOL_PREFIX_UNSAFE = "unsafe";
     private static final String PROTOCOL_NAME_IMAGE_STREAM = "imagestream";
-
+    private static final String FILE_IN_JAR_PREFIX = "jar:file:";
+    
     private String currentScreenID;
 	private FLUIScreenManager screenManager;
 	private boolean singlePageApp = false;
 	private boolean externalURL = false;
+	private WebViewCommandHandler webViewCommandHandler = null;
+	private Console console;
 
     protected FLUIWebView(Window stage, int width, int height, FLUIScreenManager screenManager) {
         this.width = width;
@@ -79,9 +84,11 @@ public class FLUIWebView extends Region {
                 		}
                 	}
                 	                	
+                 	webViewCommandHandler = new WebViewCommandHandler(stage);
+					console = new Console();
                     JSObject win = (JSObject) webEngine.executeScript("window");
-                    win.setMember("console", new Console());
-                    win.setMember("webView", new WebViewCommandHandler(stage));
+                    win.setMember("console", console);
+					win.setMember("webView", webViewCommandHandler);
                     win.setMember("screenManager", screenManager);
                     if (currentScreenID != null) {
                     	log("calling executeOnLoadWhenControllerIsReady");
@@ -149,6 +156,15 @@ public class FLUIWebView extends Region {
     public String executeWithResultString(String command) throws FLUIScriptException {
         log("Executing command >>" + command + "<<");
         try {
+        	
+        	
+        	//: if console and webView are not set again, the methods are recognized (no error thrown) in JavaScript, but not called!
+            JSObject win = (JSObject) webEngine.executeScript("window");
+            win.setMember("console", console); 
+			win.setMember("webView", webViewCommandHandler);
+        	
+			
+			
             Object result = webEngine.executeScript(command);
             return (String) result;
         } catch (netscape.javascript.JSException e) {
@@ -187,6 +203,7 @@ public class FLUIWebView extends Region {
 		}
 		
 		public double getAvailWidth(){
+			logDebug("Hello??? getAvailWidth");
 			 return java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().width;
 		}
 
@@ -237,6 +254,10 @@ public class FLUIWebView extends Region {
     		}
     	}
     	
+    	public void logDebug(String message){
+    		System.out.println("FLUIWebView-LogDebug> " + message);
+    	}
+    	
     	public void downloadFile(String fileStreamID){
     		log("downloadFile: '" + fileStreamID + "'");
     		if (screenManager != null){
@@ -277,7 +298,7 @@ public class FLUIWebView extends Region {
     }
     
     private class ImageStreamProtocolHandler extends URLStreamHandler {
-    	private String protocol;
+		private String protocol;
 
 		public ImageStreamProtocolHandler(String protocol) {
     		this.protocol = protocol;
@@ -289,9 +310,19 @@ public class FLUIWebView extends Region {
     		if ((url != null) && (screenManager != null)){
     			log("openConnection: path = >>" + url.getPath() + "<<");
     			String path = url.getPath();
+    			if (path.startsWith(FILE_IN_JAR_PREFIX)){
+        			log("openConnection: it is a path in a jar");
+    				int pos = path.indexOf("!");
+    				if (pos >= 0){
+    					return new JarImageStreamURLConnection(url, path.substring(pos + 1), screenManager.getListener());
+    				} else {
+    					log("openConnection: could not find location in jar");
+    				}
+    			}
     			if (PROTOCOL_PREFIX_UNSAFE.equals(protocol)){
     				path = path.substring(PROTOCOL_NAME_IMAGE_STREAM.length() + 1);
     			}
+    			log("openConnection: used path = >>" + path + "<<");
     			return new ImageStreamURLConnection(url, screenManager, path);
     		}
     		return null;

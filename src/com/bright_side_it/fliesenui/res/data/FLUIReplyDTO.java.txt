@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import generated.fliesenui.core.FLUIString.StringLanguage;
+
 public class FLUIReplyDTO {
     private Set<String> dtosToSet;
     private Set<String> variablesToSet;
@@ -12,20 +14,26 @@ public class FLUIReplyDTO {
     private Map<String, Object> dtoValues;
     private Map<String, Object> objectSetValueValues;
     private Map<String, String> selectBoxSelectedIDs;
+    private Map<String, Set<String>> tableCheckedRowIDs;
     private Map<String, String> markdownViewTexts;
     private Map<String, List<TextHighlighting>> textHighlighting;
     private Map<String, CursorPos> cursorPosValues;
     private Map<String, ContextAssist> contextAssists;
     private ConfirmDialogParameters confirmDialogParameters;
     private InputDialogParameters inputDialogParameters;
+    private ListChooserParameters listChooserParameters;
     private String urlToOpen;
     private Boolean openURLInNewWindow;
     private String screenToOpen;
     private Object openParameter;
     private String downloadFileStreamID;
+    private String languageToSet;
+    private StringLanguage currentLanguage;
     
     private FLUIMessage message;
     private String nextPageToOpen;
+    
+    private List<FLUIReplyAction> recordedActions;
 
     public Set<String> getDTOsToSet() {
         return dtosToSet;
@@ -185,6 +193,46 @@ public class FLUIReplyDTO {
 
 	public void setMarkdownViewTexts(Map<String, String> markdownViewTexts) {
 		this.markdownViewTexts = markdownViewTexts;
+	}
+
+	public ListChooserParameters getListChooserParameters() {
+		return listChooserParameters;
+	}
+
+	public void setListChooserParameters(ListChooserParameters listChooserParameters) {
+		this.listChooserParameters = listChooserParameters;
+	}
+
+	public String getLanguageToSet() {
+		return languageToSet;
+	}
+
+	public void setLanguageToSet(String languageToSet) {
+		this.languageToSet = languageToSet;
+	}
+
+	public StringLanguage getCurrentLanguage() {
+		return currentLanguage;
+	}
+
+	public void setCurrentLanguage(StringLanguage currentLanguage) {
+		this.currentLanguage = currentLanguage;
+	}
+
+	public List<FLUIReplyAction> getRecordedActions() {
+		return recordedActions;
+	}
+
+	public void setRecordedActions(List<FLUIReplyAction> recordedActions) {
+		this.recordedActions = recordedActions;
+	}
+
+	public Map<String, Set<String>> getTableCheckedRowIDs() {
+		return tableCheckedRowIDs;
+	}
+
+	public void setTableCheckedRowIDs(Map<String, Set<String>> tableCheckedRowIDs) {
+		this.tableCheckedRowIDs = tableCheckedRowIDs;
 	}
 
 }
