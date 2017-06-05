@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -13,6 +15,8 @@ import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.dto.dao.DTODefinitionDAO;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.dto.model.DTODefinitionDAOResult;
+import com.bright_side_it.fliesenui.dto.model.DTOField;
+import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.imageasset.dao.ImageAssetDefinitionDAO;
 import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.dao.PluginDefinitionDAO;
@@ -71,11 +75,47 @@ public class ProjectReaderService {
         readPluginDefinitions(baseDir, useUpToDateResources, result);
         readImageAssetDefinitions(baseDir, useUpToDateResources, result);
         readDTODefinitions(baseDir, useUpToDateResources, result);
+        addDerivedDTODefinitions(result);
+        
         readScreenDefinitions(baseDir, useUpToDateResources, result);
         readStringResources(baseDir, useUpToDateResources, result);
 
         return result;
     }
+
+    /**
+     * for each DTO create another DTO with the suffix "List" if it doesn't exist yet
+     * @param result
+     */
+	private void addDerivedDTODefinitions(Project result) {
+		List<DTODefinition> dtosToDerive = new ArrayList<>();
+		
+		for (Entry<String, DTODefinition> i: result.getDTODefinitionsMap().entrySet()){
+			String listDTOName = i.getKey() + GeneratorConstants.LIST_DTO_SUFFIX;
+			if (!result.getDTODefinitionsMap().containsKey(listDTOName)){
+				dtosToDerive.add(i.getValue());
+			}
+		}
+		for (DTODefinition i : dtosToDerive){
+			String listDTOName = i.getID() + GeneratorConstants.LIST_DTO_SUFFIX;
+			result.getDTODefinitionsMap().put(listDTOName, deriveListDTO(listDTOName, i));
+		}
+	}
+
+	private DTODefinition deriveListDTO(String id, DTODefinition dto) {
+		DTODefinition result = new DTODefinition();
+		Map<String, DTOField> fields = new TreeMap<String, DTOField>();
+		DTOField dtoField = new DTOField();
+		dtoField.setDTOType(dto.getID());
+		dtoField.setID(GeneratorConstants.LIST_DTO_ITEMS_FIELD_NAME);
+		dtoField.setList(true);
+		fields.put(GeneratorConstants.LIST_DTO_ITEMS_FIELD_NAME, dtoField);
+		result.setFields(fields);
+		result.setDerived(true);
+		result.setID(id);
+		result.setNodePath(dto.getNodePath());
+		return result;
+	}
 
 	public List<File> getAllDTOFiles(File dir) throws Exception {
         File itemDir = new File(dir, BaseConstants.DTO_DIR_NAME);

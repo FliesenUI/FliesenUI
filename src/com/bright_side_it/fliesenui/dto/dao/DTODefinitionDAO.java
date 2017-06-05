@@ -57,6 +57,7 @@ public class DTODefinitionDAO {
 
         String id = BaseUtil.idToFirstCharLowerCase(FileUtil.getFilenameWithoutEnding(file.getName()));
         result.getDTODefinition().setID(id);
+        result.getDTODefinition().setDerived(false);
         result.getDTODefinition().setNodePath(nodePath);
 
         int nodeIndex = 0;

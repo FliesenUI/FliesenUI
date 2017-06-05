@@ -9,6 +9,7 @@ public class DTODefinition implements ResourceDefinition {
     private String id;
     private Map<String, DTOField> fields;
     private NodePath nodePath;
+    private boolean derived;
 
     public String getID() {
         return id;
@@ -32,6 +33,14 @@ public class DTODefinition implements ResourceDefinition {
 
 	public void setNodePath(NodePath nodePath) {
 		this.nodePath = nodePath;
+	}
+
+	public boolean isDerived() {
+		return derived;
+	}
+
+	public void setDerived(boolean derived) {
+		this.derived = derived;
 	}
 
 }

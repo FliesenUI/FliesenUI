@@ -236,7 +236,7 @@ public class JavaScreenReplyCreatorLogic {
 
         for (BasicWidget widget : GeneratorUtil.getAllBasicWidgets(screenDefinition)) {
             if (BaseUtil.in(widget.getType(), BasicWidgetType.BUTTON, BasicWidgetType.IMAGE_BUTTON, BasicWidgetType.LABEL, BasicWidgetType.TEXT_AREA,
-                    BasicWidgetType.TEXT_FIELD, BasicWidgetType.CHECKBOX, BasicWidgetType.SWITCH)) {
+                    BasicWidgetType.TEXT_FIELD, BasicWidgetType.CHECKBOX, BasicWidgetType.SWITCH, BasicWidgetType.HTML_VIEW)) {
             	if (widget.getID() != null){
             		createTextSetter(result, screenDefinition, widget, signatures);
             	}

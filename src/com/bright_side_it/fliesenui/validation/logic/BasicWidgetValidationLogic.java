@@ -11,12 +11,12 @@ import static com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.Ba
 import static com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType.SWITCH;
 import static com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType.TEXT_AREA;
 import static com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType.TEXT_FIELD;
+import static com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType.HTML_VIEW;
 
 import java.util.Arrays;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
-import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.screendefinition.dao.BasicWidgetDAO;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
@@ -58,31 +58,31 @@ public class BasicWidgetValidationLogic {
 
         new ImageSourceValidator().validate(project, screenDefinition, widget.getNodePath(), widget);
 
-        validateAttributeMustExists(project, screenDefinition, widget, BasicWidgetDAO.TEXT_ATTRIBUTE_NAME, widget.getText(), BUTTON, LABEL, TEXT_FIELD, TEXT_AREA, CHECKBOX, SWITCH);
+        validateAttributeMustExists(project, screenDefinition, widget, BasicWidgetDAO.TEXT_ATTRIBUTE_NAME, widget.getText(), BUTTON, LABEL, TEXT_FIELD, TEXT_AREA, CHECKBOX, SWITCH, HTML_VIEW);
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.TEXT_ATTRIBUTE_NAME, widget.getText(), PROGRESS_BAR, SPACE, IMAGE, IMAGE_BUTTON);
 
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.LABEL_TEXT_ATTRIBUTE_NAME, widget.getLabelText(), IMAGE_BUTTON, BUTTON, LABEL,
-                PROGRESS_BAR, SPACE, IMAGE, CHECKBOX, SWITCH);
+                PROGRESS_BAR, SPACE, IMAGE, CHECKBOX, SWITCH, HTML_VIEW);
 
         validateAttributeMustExists(project, screenDefinition, widget, BaseConstants.ID_ATTRIBUTE_NAME, widget.getID(), IMAGE_BUTTON, BUTTON, TEXT_FIELD,
-                TEXT_AREA, LABEL, PROGRESS_BAR, CHECKBOX, SWITCH);
+                TEXT_AREA, LABEL, PROGRESS_BAR, CHECKBOX, SWITCH, HTML_VIEW);
 
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.HEIGHT_ATTRIBUTE_NAME, widget.getHeight(), IMAGE_BUTTON, BUTTON, LABEL,
-                TEXT_FIELD, PROGRESS_BAR, IMAGE, CHECKBOX, SWITCH);
+                TEXT_FIELD, PROGRESS_BAR, IMAGE, CHECKBOX, SWITCH, HTML_VIEW);
 
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.STYLE_ATTRIBUTE_NAME, widget.getStyle(), IMAGE_BUTTON, IMAGE, TEXT_FIELD,
-                TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH);
+                TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, HTML_VIEW);
 
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.READ_ONLY_ATTRIBUTE_NAME, widget.isReadOnly(), LABEL, BUTTON, IMAGE_BUTTON, IMAGE
-        		, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH);
+        		, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, HTML_VIEW);
 
         validateAttributeMayNotExists(project, screenDefinition, widget, BasicWidgetDAO.SCROLL_TO_BOTTOM_ATTRIBUTE_NAME, widget.getScrollToBottom(), LABEL, BUTTON, IMAGE_BUTTON, IMAGE
-        		, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, TEXT_FIELD);
+        		, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, TEXT_FIELD, HTML_VIEW);
         
-        validateAttributeMayNotExists(project, screenDefinition, widget, null, widget.getEventParameters(), LABEL, TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, IMAGE, CHECKBOX, SWITCH);
+        validateAttributeMayNotExists(project, screenDefinition, widget, null, widget.getEventParameters(), LABEL, TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, IMAGE, CHECKBOX, SWITCH, HTML_VIEW);
 
 
-        validateAttributeMayNotExists(project, screenDefinition, widget, null, widget.getImageSource(), TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH);
+        validateAttributeMayNotExists(project, screenDefinition, widget, null, widget.getImageSource(), TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, HTML_VIEW);
         validateAttributeMustExists(project, screenDefinition, widget, null, widget.getImageSource(), IMAGE_BUTTON, IMAGE);
 
         if ((widget.getImageSource() != null) && (widget.getID() == null)){

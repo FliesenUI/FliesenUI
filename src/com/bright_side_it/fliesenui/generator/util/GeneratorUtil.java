@@ -561,9 +561,7 @@ public class GeneratorUtil {
         result.append("            " + GeneratorConstants.BROWSER_MODE_JS_VARIABLE + " = \"" + GeneratorUtil.getBrowserModeJSName(browserType) + "\";\n");
         result.append("            htmlFileSuffix = \"" + GeneratorUtil.getBrowserTypeFilenameSuffix(browserType) + "\";\n");
         result.append("            singlePageApp = " + singlePageApp + ";\n");
-
-
-        result.append("            var app = angular.module('app', ['ngMaterial']).config(function($mdThemingProvider) {\n");
+        result.append("            var app = angular.module('app', ['ngMaterial', 'ngSanitize']).config(function($mdThemingProvider) {\n");
         result.append("                $mdThemingProvider.theme('default')\n");
         result.append("                    .primaryPalette('" + projectDefinition.getThemePrimaryPalette() + "')\n");
         result.append("                    .accentPalette('" + projectDefinition.getThemeAccentePalette() + "')\n");

@@ -12,10 +12,12 @@ import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.XMLUtil;
 import com.bright_side_it.fliesenui.project.model.AssistValue;
 import com.bright_side_it.fliesenui.screendefinition.logic.NodePathLogic;
+import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
+import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefionitionReadException;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer.Orientation;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
@@ -26,6 +28,8 @@ public class LayoutContainerDAO {
     public static final String ORIENTATION_ATTRIBUTE_NAME = "orientation";
     private static final String ORIENTATION_VALUE_ROW = "row";
     private static final String ORIENTATION_VALUE_COLUMN = "column";
+
+	private static final int FULL_SIZE = 100;
     
     public boolean isLayoutContainerNode(Node node) {
         return node.getNodeName().equals(LAYOUT_CONTAINER_NODE_NAME);
@@ -58,13 +62,20 @@ public class LayoutContainerDAO {
         }
 
         int nodeIndex = 0;
+        LayoutBarDAO layoutBarDAO = new LayoutBarDAO();
         for (Node i : XMLUtil.getChildrenWithoutTextNodes(node)) {
             NodePath childNodePath = new NodePathLogic().createChildNodePath(nodePath, nodeIndex);
-            try {
-                new LayoutBarDAO().readLayoutBar(i, childNodePath, result, layoutContainer);
-            } catch (Exception e) {
-                ScreenDefinitionDAO.addError(result, childNodePath, e);
-            }
+			try {
+				if (LayoutBarDAO.getNodeName().equals(i.getNodeName())) {
+					layoutBarDAO.readLayoutBar(i, childNodePath, result, layoutContainer);
+				} else if (BasicWidgetDAO.WIDGET_NODE_NAME_SPACE.equals(i.getNodeName())) {
+					readSpaceNodeAndWrapInBarAndCell(i, childNodePath, result, layoutContainer);
+				} else {
+					throw new Exception("Unexpected child node for '" + LAYOUT_CONTAINER_NODE_NAME + "': '" + i.getNodeName() + "'");
+				}
+			} catch (Exception e) {
+				ScreenDefinitionDAO.addError(result, childNodePath, e);
+			}
             nodeIndex++;
         }
 
@@ -72,7 +83,26 @@ public class LayoutContainerDAO {
         ValidationUtil.validateAllowedAttributes(node, nodePath, BaseUtil.getTextSet(getTagAttributes()), result);
     }
 
-    private void addToParent(ScreenDefinitionDAOResult result, LayoutCell layoutCell, LayoutContainer layoutContainer) {
+    private void readSpaceNodeAndWrapInBarAndCell(Node node, NodePath nodePath, ScreenDefinitionDAOResult result, LayoutContainer layoutContainer) throws ScreenDefionitionReadException, Exception {
+    	if (layoutContainer.getBars() == null) {
+            layoutContainer.setBars(new ArrayList<>());
+        }
+        LayoutBar layoutBar = new LayoutBar();
+        layoutBar.setVisible(true);
+        layoutBar.setNodePath(nodePath);
+        layoutContainer.getBars().add(layoutBar);
+        layoutBar.setCells(new ArrayList<>());
+
+        LayoutCell layoutCell = new LayoutCell();
+        layoutCell.setVisible(true);
+        layoutCell.setNodePath(nodePath);
+        layoutBar.getCells().add(layoutCell);
+        layoutCell.setSize(FULL_SIZE);
+    	
+		new BasicWidgetDAO().readWidget(node, nodePath, result, layoutCell);
+	}
+
+	private void addToParent(ScreenDefinitionDAOResult result, LayoutCell layoutCell, LayoutContainer layoutContainer) {
         if (isPartOfCell(layoutCell)) {
             if (layoutCell.getCellItems() == null) {
                 layoutCell.setCellItems(new ArrayList<>());
@@ -110,6 +140,7 @@ public class LayoutContainerDAO {
     public List<AssistValue> getPossibleChildTags() {
         List<AssistValue> result = new ArrayList<AssistValue>();
         result.add(BaseUtil.createAssistValue(null, LayoutBarDAO.getNodeName(), "Bar (either row or column depening on the container orientation)"));
+        result.add(BaseUtil.createAssistValue(null, BasicWidgetDAO.WIDGET_NODE_NAME_SPACE, "Space"));
         return result;
     }
 

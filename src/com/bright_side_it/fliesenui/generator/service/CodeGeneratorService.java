@@ -154,6 +154,7 @@ public class CodeGeneratorService {
         resourceDA.copyResourceToDir(Resource.FLUI_UTIL_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_ANIMATE_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_AREA_JS, libDir);
+        resourceDA.copyResourceToDir(Resource.ANGULAR_SANITIZE_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_MATERIAL_CSS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_MATERIAL_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_MESSAGES_JS, libDir);

@@ -71,6 +71,8 @@ public class GeneratorConstants {
 //	public static final String CONTROL_MODIFIER_PARAMETER_NAME = "control";
 //	public static final String SHIFT_MODIFIER_PARAMETER_NAME = "shift";
 //	public static final String META_MODIFIER_PARAMETER_NAME = "meta";
+	public static final String LIST_DTO_SUFFIX = "List";
+	public static final String LIST_DTO_ITEMS_FIELD_NAME = "items";
 	
 
 

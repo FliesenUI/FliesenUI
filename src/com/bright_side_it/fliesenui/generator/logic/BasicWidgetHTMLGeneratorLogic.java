@@ -49,6 +49,9 @@ public class BasicWidgetHTMLGeneratorLogic {
         case SPACE:
             generateSpaceHTML(parentTag, screenDefinition, widget);
             break;
+        case HTML_VIEW:
+        	generateHTMLViewHTML(parentTag, screenDefinition, widget);
+        	break;
         case FILE_UPLOAD:
         	generateFileUploadHTML(parentTag, screenDefinition, widget, browserType);
         	break;
@@ -57,7 +60,7 @@ public class BasicWidgetHTMLGeneratorLogic {
         }
     }
 
-    private void generateTextAreaHTML(HTMLTag parentTag, ScreenDefinition screenDefinition, BasicWidget widget) {
+	private void generateTextAreaHTML(HTMLTag parentTag, ScreenDefinition screenDefinition, BasicWidget widget) {
         String showVariable = GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, widget);
         String styleString = "resize:none; width:99%;";
         if (widget.getHeight() != null){
@@ -116,6 +119,12 @@ public class BasicWidgetHTMLGeneratorLogic {
             tagLogic.addTag(parentTag, "div", "", "style", "height:" + widget.getHeight() + "px");
         }
     }
+    
+    private void generateHTMLViewHTML(HTMLTag parentTag, ScreenDefinition screenDefinition, BasicWidget widget) {
+    	String bindHTMLVariable = GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, widget);
+    	String showVariable = GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, widget);
+        tagLogic.addTag(parentTag, "p", "", "ng-bind-html", bindHTMLVariable, "ng-show", showVariable);
+	}
 
     private String createTextVarPlaceholder(ScreenDefinition screenDefinition, BasicWidget widget) {
         return "{{" + GeneratorUtil.getJSWidgetTextVariableName(screenDefinition, widget) + "}}";

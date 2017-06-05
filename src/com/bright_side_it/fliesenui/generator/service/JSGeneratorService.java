@@ -1096,7 +1096,7 @@ public class JSGeneratorService {
 	private StringBuilder createGettersAndSettersCode(ScreenDefinition screenDefinition) throws Exception {
 		StringBuilder result = new StringBuilder();
 		for (BasicWidget widget : GeneratorUtil.getAllBasicWidgets(screenDefinition)) {
-			if (BaseUtil.in(widget.getType(), BasicWidgetType.TEXT_FIELD, BasicWidgetType.TEXT_AREA, BasicWidgetType.LABEL)) {
+			if (BaseUtil.in(widget.getType(), BasicWidgetType.TEXT_FIELD, BasicWidgetType.TEXT_AREA, BasicWidgetType.LABEL, BasicWidgetType.HTML_VIEW)) {
 				if (widget.getID() != null) {
 					// String setterMethodName =
 					// BaseUtil.buildIDWithPrefix(widget.getID() +

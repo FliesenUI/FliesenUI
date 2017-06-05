@@ -46,11 +46,12 @@ public class BasicWidgetDAO{
     private static final String WIDGET_NODE_NAME_IMAGE = "image";
     private static final String WIDGET_NODE_NAME_LABEL = "label";
     private static final String WIDGET_NODE_NAME_PROGRESS_BAR = "progressBar";
-    private static final String WIDGET_NODE_NAME_SPACE = "space";
+    public static final String WIDGET_NODE_NAME_SPACE = "space";
     private static final String WIDGET_NODE_NAME_CHECKBOX = "checkbox";
     private static final String WIDGET_NODE_NAME_SWITCH = "switch";
     private static final String WIDGET_NODE_NAME_FILE_UPLOAD = "fileUpload";
     private static final String WIDGET_NODE_NAME_MARKDOWN_VIEW = "markdownView";
+    private static final String WIDGET_NODE_NAME_HTML_VIEW = "htmlView";
 
     private static final String STYLE_VALUE_NAME_NORMAL = "normal";
     private static final String STYLE_VALUE_NAME_TINY = "tiny";
@@ -68,6 +69,7 @@ public class BasicWidgetDAO{
 
         result.put(WIDGET_NODE_NAME_TEXT_FIELD, BasicWidgetType.TEXT_FIELD);
         result.put(WIDGET_NODE_NAME_MARKDOWN_VIEW, BasicWidgetType.MARKDOWN_VIEW);
+        result.put(WIDGET_NODE_NAME_HTML_VIEW, BasicWidgetType.HTML_VIEW);
         result.put(WIDGET_NODE_NAME_TEXT_AREA, BasicWidgetType.TEXT_AREA);
         result.put(WIDGET_NODE_NAME_BUTTON, BasicWidgetType.BUTTON);
         result.put(WIDGET_NODE_NAME_IMAGE_BUTTON, BasicWidgetType.IMAGE_BUTTON);
@@ -91,11 +93,12 @@ public class BasicWidgetDAO{
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_IMAGE, "Image"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_IMAGE_BUTTON, "Image Button"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_LABEL, "Label"));
-        result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_MARKDOWN_VIEW, "Markdown view: Display the text formatted as markdown"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_CHECKBOX, "Checkbox"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_SWITCH, "Switch"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_PROGRESS_BAR, "Progress Bar"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_SPACE, "Space"));
+        result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_MARKDOWN_VIEW, "Markdown view: Display the text formatted as markdown"));
+        result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_HTML_VIEW, "HTML view: Display the text interpreted as HTML"));
         result.add(BaseUtil.createAssistValue(null, WIDGET_NODE_NAME_FILE_UPLOAD, "File Upload"));
 
 
@@ -200,7 +203,7 @@ public class BasicWidgetDAO{
         	result.add(BaseUtil.createAssistValue(true, TEXT_ATTRIBUTE_NAME, "initial text of the widget"));
         }
 
-        if (in(type, BasicWidgetType.BUTTON, BasicWidgetType.LABEL, BasicWidgetType.TEXT_AREA, BasicWidgetType.TEXT_FIELD, BasicWidgetType.MARKDOWN_VIEW)) {
+        if (in(type, BasicWidgetType.BUTTON, BasicWidgetType.LABEL, BasicWidgetType.TEXT_AREA, BasicWidgetType.TEXT_FIELD, BasicWidgetType.MARKDOWN_VIEW, BasicWidgetType.HTML_VIEW)) {
             result.add(BaseUtil.createAssistValue(true, TEXT_ATTRIBUTE_NAME, "initial text of the widget"));
             result.add(BaseUtil.createAssistValue(false, TEXT_DTO_FIELD_ATTRIBUTE_NAME,
                     "name of the field in a declared DTO that sets the text of this widget whenever the DTO is updated"));

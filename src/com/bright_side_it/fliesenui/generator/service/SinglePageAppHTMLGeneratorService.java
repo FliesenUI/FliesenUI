@@ -57,6 +57,7 @@ public class SinglePageAppHTMLGeneratorService {
         result.append("        <script src=\"lib/angular-aria.min.js\"></script>\n");
         result.append("        <script src=\"lib/angular-messages.min.js\"></script>\n");
         result.append("        <script src=\"lib/angular-material.min.js\"></script>\n");
+        result.append("        <script src=\"lib/angular-sanitize.min.js\"></script>\n");
         result.append("        <script src=\"lib/showdown.min.js\"></script>\n");
         result.append("        <script src=\"lib/strings.js\"></script>\n");
         result.append("        <script src=\"cmlib/codemirror.js\"></script>\n");

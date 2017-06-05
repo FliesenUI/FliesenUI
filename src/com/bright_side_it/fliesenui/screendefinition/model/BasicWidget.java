@@ -4,7 +4,7 @@ import java.util.List;
 
 public class BasicWidget implements CellItem, EventParameterContainer, ImageSourceContainer, EventHandlerContainer /*, EventListenerContainer*/ {
     public enum BasicWidgetType {
-        LABEL, BUTTON, IMAGE_BUTTON, IMAGE, TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, FILE_UPLOAD, MARKDOWN_VIEW
+        LABEL, BUTTON, IMAGE_BUTTON, IMAGE, TEXT_FIELD, TEXT_AREA, PROGRESS_BAR, SPACE, CHECKBOX, SWITCH, FILE_UPLOAD, MARKDOWN_VIEW, HTML_VIEW
     }
 
     public enum Style {
