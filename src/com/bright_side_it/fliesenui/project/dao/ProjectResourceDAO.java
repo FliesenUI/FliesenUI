@@ -41,6 +41,12 @@ public class ProjectResourceDAO {
         return file;
     }
 
+    public File createColorPaletteHistoryFile(File baseDir, String id) {
+    	File dir = new File(getHistoryDir(baseDir), BaseConstants.COLOR_PALETTE_DIR_NAME);
+    	File file = new File(dir, id + "_" + createTimestamp() + BaseConstants.COLOR_PALETTE_FILE_ENDING);
+    	return file;
+    }
+    
     public File createPluginHistoryFile(File baseDir, String id) {
         File dir = new File(getHistoryDir(baseDir), BaseConstants.PLUGIN_DIR_NAME);
         File file = new File(dir, id + "_" + createTimestamp() + BaseConstants.PLUGIN_DEFINITION_FILE_ENDING);
@@ -74,6 +80,12 @@ public class ProjectResourceDAO {
         return file;
     }
 
+    public File getColorPaletteFile(File baseDir, String id) {
+    	File dir = new File(baseDir, BaseConstants.COLOR_PALETTE_DIR_NAME);
+    	File file = new File(dir, id + BaseConstants.COLOR_PALETTE_FILE_ENDING);
+    	return file;
+    }
+    
     public File getPluginFile(File baseDir, String id) {
         File dir = new File(baseDir, BaseConstants.PLUGIN_DIR_NAME);
         File file = new File(dir, id + BaseConstants.PLUGIN_DEFINITION_FILE_ENDING);
@@ -144,6 +156,7 @@ public class ProjectResourceDAO {
         result.addAll(getAllScreens(baseDir));
     	result.addAll(getAllImageAssets(baseDir));
     	result.addAll(getAllStringResources(baseDir, projectDefinition));
+    	result.addAll(getAllColorPalettes(baseDir));
         return result;
     }
 
@@ -161,6 +174,8 @@ public class ProjectResourceDAO {
             return getImageAssetFile(projectDir, resourceID);
         case STRING_RESOURCE:
         	return getStringResourceFile(projectDir, projectDefinition, resourceID);
+        case COLOR_PALETTE:
+        	return getColorPaletteFile(projectDir, resourceID);
         default:
             throw new Exception("Unexpected resource type: " + resourceType);
         }
@@ -202,6 +217,24 @@ public class ProjectResourceDAO {
         return result;
     }
 
+    public List<ProjectResource> getAllColorPalettes(File dir) {
+    	List<ProjectResource> result = new ArrayList<>();
+    	File colorPaletteDir = new File(dir, BaseConstants.COLOR_PALETTE_DIR_NAME);
+    	if (!colorPaletteDir.exists()){
+    		return result;
+    	}
+    	for (File i : colorPaletteDir.listFiles()) {
+    		ProjectResource item = new ProjectResource();
+    		item.setResourceType(ResourceType.COLOR_PALETTE);
+    		item.setResourceFormat(ResourceFormat.XML);
+    		item.setId(FileUtil.getFilenameWithoutEnding(i.getName()));
+    		item.setFilePath(i.getAbsolutePath());
+    		result.add(item);
+    	}
+    	Collections.sort(result);
+    	return result;
+    }
+    
     public List<ProjectResource> getAllPlugins(File dir) {
         List<ProjectResource> result = new ArrayList<>();
         File definitionDir = new File(dir, BaseConstants.PLUGIN_DIR_NAME);

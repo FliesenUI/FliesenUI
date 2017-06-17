@@ -50,6 +50,8 @@ public class DefinitionResourceLogic {
 			return ResourceFormat.XML;
 		case STRING_RESOURCE:
 			return ResourceFormat.XML;
+		case COLOR_PALETTE:
+			return ResourceFormat.XML;
 		default:
 			throw new Exception("Unknown resource type: " + type);
 		}

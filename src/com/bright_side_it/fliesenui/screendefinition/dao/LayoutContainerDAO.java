@@ -24,11 +24,16 @@ import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 public class LayoutContainerDAO {
     private static final String LAYOUT_CONTAINER_NODE_NAME = "container";
 
-    private static final String VISIBLE_ATTRIBUTE_NAME = "visible";
+    public static final String VISIBLE_ATTRIBUTE_NAME = "visible";
     public static final String ORIENTATION_ATTRIBUTE_NAME = "orientation";
     private static final String ORIENTATION_VALUE_ROW = "row";
     private static final String ORIENTATION_VALUE_COLUMN = "column";
-
+    private static final String ORIENTATION_VALUE_BORDER = "borderLayout";
+    public static final String LEFT_SIZE_ATTRIBUTE_VALUE = "leftSize";
+    public static final String RIGHT_SIZE_ATTRIBUTE_VALUE = "rightSize";
+    public static final String TOP_SIZE_ATTRIBUTE_VALUE = "topSize";
+    public static final String BOTTOM_SIZE_ATTRIBUTE_VALUE = "bottomSize";
+    
 	private static final int FULL_SIZE = 100;
     
     public boolean isLayoutContainerNode(Node node) {
@@ -47,7 +52,11 @@ public class LayoutContainerDAO {
         layoutContainer.setNodePath(nodePath);
         layoutContainer.setID(XMLUtil.getStringAttributeOptional(node, BaseConstants.ID_ATTRIBUTE_NAME, null));
         layoutContainer.setVisible(XMLUtil.getBooleanAttributeOptional(node, VISIBLE_ATTRIBUTE_NAME, true));
-
+        layoutContainer.setLeftSizeInCM(XMLUtil.getDoubleAttributeOptional(node, LEFT_SIZE_ATTRIBUTE_VALUE, null));
+        layoutContainer.setRightSizeInCM(XMLUtil.getDoubleAttributeOptional(node, RIGHT_SIZE_ATTRIBUTE_VALUE, null));
+        layoutContainer.setTopSizeInCM(XMLUtil.getDoubleAttributeOptional(node, TOP_SIZE_ATTRIBUTE_VALUE, null));
+        layoutContainer.setBottomSizeInCM(XMLUtil.getDoubleAttributeOptional(node, BOTTOM_SIZE_ATTRIBUTE_VALUE, null));
+        layoutContainer.setTopContainer(!isPartOfCell(layoutCell));
 
         addToParent(result, layoutCell, layoutContainer);
 
@@ -129,6 +138,8 @@ public class LayoutContainerDAO {
             return Orientation.ROW;
         } else if (string.equals(ORIENTATION_VALUE_COLUMN)) {
             return Orientation.COLUMN;
+        } else if (string.equals(ORIENTATION_VALUE_BORDER)) {
+        	return Orientation.BORDER_LAYOUT;
         }
         throw new Exception("Unknown orientation: '" + string + "'");
     }
@@ -146,9 +157,13 @@ public class LayoutContainerDAO {
 
     public List<AssistValue> getTagAttributes() {
         List<AssistValue> result = new ArrayList<AssistValue>();
-        result.add(BaseUtil.createAssistValue(null, ORIENTATION_ATTRIBUTE_NAME, "which may be either '" + ORIENTATION_VALUE_ROW + "' or '" + ORIENTATION_VALUE_COLUMN + "'"));
+        result.add(BaseUtil.createAssistValue(null, ORIENTATION_ATTRIBUTE_NAME, "which may be either '" + ORIENTATION_VALUE_ROW + "' or '" + ORIENTATION_VALUE_COLUMN + "' and '" + ORIENTATION_VALUE_BORDER + "' for the top container"));
         result.add(BaseUtil.createAssistValue(false, BaseConstants.ID_ATTRIBUTE_NAME, "id"));
         result.add(BaseUtil.createAssistValue(false, VISIBLE_ATTRIBUTE_NAME, "visibility"));
+        result.add(BaseUtil.createAssistValue(false, TOP_SIZE_ATTRIBUTE_VALUE, "for border layout: size of top pane in cm"));
+        result.add(BaseUtil.createAssistValue(false, BOTTOM_SIZE_ATTRIBUTE_VALUE, "for border layout: size of bottom pane in cm"));
+        result.add(BaseUtil.createAssistValue(false, LEFT_SIZE_ATTRIBUTE_VALUE, "for border layout: size of left pane in cm"));
+        result.add(BaseUtil.createAssistValue(false, RIGHT_SIZE_ATTRIBUTE_VALUE, "for border layout: size of right pane in cm"));
         return result;
     }
 
@@ -156,6 +171,7 @@ public class LayoutContainerDAO {
         List<AssistValue> assistValues = new ArrayList<AssistValue>();
         assistValues.add(BaseUtil.createAssistValue(null, ORIENTATION_VALUE_ROW, "Orientation in rows"));
         assistValues.add(BaseUtil.createAssistValue(null, ORIENTATION_VALUE_COLUMN, "Orientation in columns"));
+        assistValues.add(BaseUtil.createAssistValue(null, ORIENTATION_VALUE_BORDER, "Border layout (only for top container)"));
         return new AssistValueList(assistValues);
     }
 

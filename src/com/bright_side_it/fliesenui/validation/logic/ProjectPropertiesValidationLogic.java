@@ -2,6 +2,7 @@ package com.bright_side_it.fliesenui.validation.logic;
 
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.LanguageFlavor;
+import com.bright_side_it.fliesenui.project.dao.ProjectDefinitionDAO;
 import com.bright_side_it.fliesenui.project.dao.ProjectOutputDAO;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectOutput;
@@ -21,7 +22,23 @@ public class ProjectPropertiesValidationLogic {
         	}
         }
         
+        validateColorPalette(project, project.getProjectDefinition().getThemeAccentePalette(), ProjectDefinitionDAO.THEME_ACCENT_PALETTE_ATTRIBUTE_NAME);
+        validateColorPalette(project, project.getProjectDefinition().getThemeBackgroundPalette(), ProjectDefinitionDAO.THEME_BACKGROUND_PALETTE_ATTRIBUTE_NAME);
+        validateColorPalette(project, project.getProjectDefinition().getThemePrimaryPalette(), ProjectDefinitionDAO.THEME_PRIMARY_PALETTE_ATTRIBUTE_NAME);
+        validateColorPalette(project, project.getProjectDefinition().getThemeWarnPalette(), ProjectDefinitionDAO.THEME_WARN_PALETTE_ATTRIBUTE_NAME);
     }
+
+	private void validateColorPalette(Project project, String colorPaletteName, String attributeName) {
+		if (ProjectDefinitionDAO.DEFAULT_PALATTE_NAMES.contains(colorPaletteName)){
+			return;
+		}
+		if (project.getColorPaletteMap().containsKey(colorPaletteName)){
+			return;
+		}
+    	ValidationUtil.addProjectDefinitionError(project, project.getProjectDefinition().getNodePath(), attributeName
+    			, ProblemType.PROJECT_UNKNOWN_COLOR_PALETTE
+    			, "This color palette is neither a default palette nor a custom palette: '" + colorPaletteName + "'");
+	}
 
 	private void validateProjectOutput(Project project, ProjectOutput output) {
 		if (output.getLanguageFlavor() == LanguageFlavor.JAVA){

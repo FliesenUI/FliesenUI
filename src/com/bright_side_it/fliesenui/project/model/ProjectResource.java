@@ -2,7 +2,7 @@ package com.bright_side_it.fliesenui.project.model;
 
 public class ProjectResource implements Comparable<ProjectResource> {
     public enum ResourceType {
-        SCREEN, DTO, PROJECT, PLUGIN, IMAGE_ASSET, STRING_RESOURCE
+        SCREEN, DTO, PROJECT, PLUGIN, IMAGE_ASSET, STRING_RESOURCE, COLOR_PALETTE
     }
     public enum ResourceFormat{XML, IMAGE}
 

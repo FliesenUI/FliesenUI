@@ -166,7 +166,8 @@ public class JSReplyFunctionCreatorLogic {
 		//: required in onLoad. Then digest needs to be called. Otherwise the fields that have been set will not be shown. 
 		//: However digest may not be called in the other cases where ng-onclick is used and digest is called automatically 
 		//: which causes conflicts. Therefore the timer-method is used which may always call digest.
-		//: updateViews() is needed for CodeMirror editors. The method refresh() needs to be called after setText.
+		//: updateViews() is needed for CodeMirror editors. The method refresh() needs to be called after setText. 
+		//: It is also needed for text areas with scrollToBottom=true which should be executed after the digest 
         result.append("    setTimeout(function() {scope.$digest();" + screenIDPrefix + "updateViews();}, 0);\n"); 
         result.append("\n");
         result.append("};\n");

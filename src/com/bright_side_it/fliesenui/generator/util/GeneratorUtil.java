@@ -2,17 +2,20 @@ package com.bright_side_it.fliesenui.generator.util;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.bright_side_it.fliesenui.base.util.BaseUtil;
-import com.bright_side_it.fliesenui.base.util.TextUtil;
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.BasicType;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.base.util.BaseConstants.LanguageFlavor;
+import com.bright_side_it.fliesenui.base.util.BaseUtil;
+import com.bright_side_it.fliesenui.base.util.TextUtil;
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette;
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette.Shade;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter.DataType;
 import com.bright_side_it.fliesenui.plugin.model.PluginEvent;
@@ -24,15 +27,16 @@ import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameter;
+import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSourceContainer;
+import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.SelectBox;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem;
 import com.bright_side_it.fliesenui.screendefinition.model.Timer;
-import com.bright_side_it.fliesenui.screendefinition.model.EventParameter.WidgetProperty;
 
 public class GeneratorUtil {
     public static File getCorePackageDir(File outputBaseDir) {
@@ -331,6 +335,14 @@ public class GeneratorUtil {
         return getJSWidgetTextVariableName(screenDefinition, widget.getID());
     }
     
+    public static String getJSWidgetHeadlineTextVariableName(ScreenDefinition screenDefinition, LayoutCell cell) {
+    	return getJSWidgetHeadlineTextVariableName(screenDefinition, cell.getID());
+    }
+    
+    public static String getJSWidgetSubheadTextVariableName(ScreenDefinition screenDefinition, LayoutCell cell) {
+    	return getJSWidgetSubheadTextVariableName(screenDefinition, cell.getID());
+    }
+    
 	public static String getJSTableColumnTextVariableName(ScreenDefinition screenDefinition, TableWidget widget, int tableColumnIndex) {
 		return getJSTableColumnTextVariableName(screenDefinition, widget.getID(), tableColumnIndex);
 	}
@@ -363,6 +375,14 @@ public class GeneratorUtil {
         return getScreenJSVariablePrefix(screenDefinition) + widgetID + "_propertyText";
     }
 
+    public static String getJSWidgetHeadlineTextVariableName(ScreenDefinition screenDefinition, String widgetID) {
+    	return getScreenJSVariablePrefix(screenDefinition) + widgetID + "_headlineText";
+    }
+    
+    public static String getJSWidgetSubheadTextVariableName(ScreenDefinition screenDefinition, String widgetID) {
+    	return getScreenJSVariablePrefix(screenDefinition) + widgetID + "_subheadText";
+    }
+    
     public static String getJSWidgetSelectedVariableName(ScreenDefinition screenDefinition, BasicWidget widget) {
         return getJSWidgetSelectedVariableName(screenDefinition, widget.getID());
     }
@@ -562,6 +582,7 @@ public class GeneratorUtil {
         result.append("            htmlFileSuffix = \"" + GeneratorUtil.getBrowserTypeFilenameSuffix(browserType) + "\";\n");
         result.append("            singlePageApp = " + singlePageApp + ";\n");
         result.append("            var app = angular.module('app', ['ngMaterial', 'ngSanitize']).config(function($mdThemingProvider) {\n");
+        result.append(createCustomColorPaletteCode(project));
         result.append("                $mdThemingProvider.theme('default')\n");
         result.append("                    .primaryPalette('" + projectDefinition.getThemePrimaryPalette() + "')\n");
         result.append("                    .accentPalette('" + projectDefinition.getThemeAccentePalette() + "')\n");
@@ -581,7 +602,64 @@ public class GeneratorUtil {
         return result.toString();
     }
 
-    public static String getBrowserModeJSName(BrowserType browserType) throws Exception{
+    private static StringBuilder createCustomColorPaletteCode(Project project) throws Exception {
+		StringBuilder result = new StringBuilder();
+		for (Entry<String, ColorPalette> colorPaletteEntry: project.getColorPaletteMap().entrySet()){
+			String varName = "customColorPalette" + BaseUtil.idToFirstCharUpperCase(colorPaletteEntry.getKey());
+			ColorPalette palette = colorPaletteEntry.getValue();
+			result.append("                var " + varName + " = $mdThemingProvider.extendPalette('" + palette.getExtendedPalette() + "', {\n");
+
+			boolean first = true;
+			for (Entry<Shade, String> colorEntry: BaseUtil.toEmptyMapIfNull(palette.getColors()).entrySet()){
+				String optionalComma = ", ";
+				if (first){
+					first = false;
+					optionalComma = "  ";
+ 				}
+				result.append("                        " + optionalComma + "'" + toShadeName(colorEntry.getKey()) + "': '" + colorEntry.getValue().substring(1) + "'" + "\n");
+			}
+			result.append("                });\n");
+			result.append("                $mdThemingProvider.definePalette('" + colorPaletteEntry.getKey() + "', " + varName + ");\n");
+		}
+		return result;
+	}
+
+	private static String toShadeName(Shade shade) throws Exception {
+		switch (shade) {
+		case SHADE_50:
+			return "50";
+		case SHADE_100:
+			return "100";
+		case SHADE_200:
+			return "200";
+		case SHADE_300:
+			return "300";
+		case SHADE_400:
+			return "400";
+		case SHADE_500:
+			return "500";
+		case SHADE_600:
+			return "600";
+		case SHADE_700:
+			return "700";
+		case SHADE_800:
+			return "800";
+		case SHADE_900:
+			return "900";
+		case SHADE_A100:
+			return "A100";
+		case SHADE_A200:
+			return "A200";
+		case SHADE_A400:
+			return "A400";
+		case SHADE_A700:
+			return "A700";
+		default:
+			throw new Exception("Unkown shade: " + shade);
+		}
+	}
+
+	public static String getBrowserModeJSName(BrowserType browserType) throws Exception{
     	if (browserType == BrowserType.WEB) {
             return "WebBrowser";
         } else if (browserType == BrowserType.JAVA_FX) {
@@ -767,6 +845,54 @@ public class GeneratorUtil {
 			return "generated.fliesenui.core.KeyModifier";
 		default:
 			throw new Exception("Unknown data type: " + dataType);
+		}
+	}
+	
+	public static String getPrimaryColorFromDefaultPaletteName(String paletteName){
+		if (paletteName == null){
+			return null;
+		}
+		switch (paletteName) {
+		case "amber":
+			return "#ffc107";
+		case "blue":
+			return "#2196f3";
+		case "blue-grey":
+			return "#607d8b";
+		case "brown":
+			return "#795548";
+		case "cyan":
+			return "#00bcd4";
+		case "deep-orange":
+			return "#ff5722";
+		case "deep-purple":
+			return "#673ab7";
+		case "green":
+			return "#4caf50";
+		case "grey":
+			return "#9e9e9e";
+		case "indigo":
+			return "#3f51b5";
+		case "light-blue":
+			return "#03a9f4";
+		case "light-green":
+			return "#8bc34a";
+		case "lime":
+			return "#cddc39";
+		case "orange":
+			return "#ff9800";
+		case "pink":
+			return "#e91e63";
+		case "purple":
+			return "#9c27b0";
+		case "red":
+			return "#f44336";
+		case "teal":
+			return "#009688";
+		case "yellow":
+			return "#ffeb3b";
+		default:
+			return null;
 		}
 	}
 

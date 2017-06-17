@@ -9,6 +9,8 @@ import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
+import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell.AlignType;
+import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell.CellStyle;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.PluginInstance;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
@@ -19,8 +21,38 @@ public class LayoutCellHTMLGeneratorLogic {
     private HTMLTagLogic tagLogic = new HTMLTagLogic();
 
     public void generateHTML(HTMLTag parentTag, Project project, ScreenDefinition screenDefinition, LayoutBar bar, LayoutCell cell, BrowserType browserType) throws Exception {
+    	
     	HTMLTag result = tagLogic.addTag(parentTag, "div", null, "flex", "" + cell.getSize());
-    	HTMLTag contentTag = tagLogic.addTag(result, "span", null);
+    	HTMLTag contentParentTag = result;
+    	if (cell.getCellStyle() == CellStyle.CARD){
+    		HTMLTag cardTag = tagLogic.addTag(result, "md-card", null);
+
+    		if ((cell.getHeadlineText() != null) || (cell.getSubheadText() != null)){
+    			HTMLTag cardTitle = tagLogic.addTag(cardTag, "md-card-title", null);
+    			HTMLTag cardTitleTextTag = tagLogic.addTag(cardTitle, "md-card-title-text", null);
+    			if (cell.getHeadlineText() != null){
+    				tagLogic.addTag(cardTitleTextTag, "span", "{{" + GeneratorUtil.getJSWidgetHeadlineTextVariableName(screenDefinition, cell) + "}}", "class", "md-headline");
+    			}
+    			if (cell.getSubheadText() != null){
+    				tagLogic.addTag(cardTitleTextTag, "span", "{{" + GeneratorUtil.getJSWidgetSubheadTextVariableName(screenDefinition, cell) + "}}", "class", "md-subhead");
+    			}
+    		}
+    		
+    		contentParentTag = tagLogic.addTag(cardTag, "md-card-content", null);
+    	} else {
+    		if (cell.getHeadlineText() != null){
+    			tagLogic.addTag(result, "div", "{{" + GeneratorUtil.getJSWidgetHeadlineTextVariableName(screenDefinition, cell) + "}}", "class", "md-headline");
+    		}
+    		if (cell.getSubheadText() != null){
+    			tagLogic.addTag(result, "div", "{{" + GeneratorUtil.getJSWidgetSubheadTextVariableName(screenDefinition, cell) + "}}", "class", "md-subhead");
+    		}
+    	}
+    	
+    	HTMLTag contentTag = tagLogic.addTag(contentParentTag, "span", null);
+    	if (cell.getContentAlign() != null){
+    		log("cell content align: " + cell.getContentAlign());
+    		tagLogic.setAttribute(contentTag, "align", alignValueToHTMLValue(cell.getContentAlign()));
+    	}
 
         if (bar.getID() != null) {
         	//: since the bars are declared by the user, but there are no bars in HTML, hiding a bar means hiding all cells of the bar
@@ -73,6 +105,19 @@ public class LayoutCellHTMLGeneratorLogic {
             }
         }
     }
+
+	private String alignValueToHTMLValue(AlignType contentAlign) throws Exception {
+		switch (contentAlign) {
+		case LEFT:
+			return "left";
+		case RIGHT:
+			return "right";
+		case CENTER:
+			return "center";
+		default:
+			throw new Exception("Unknown content align value: " + contentAlign);
+		}
+	}
 
 	private void log(String message) {
 		System.out.println("LayoutCellHTMLGeneratorLogic> " + message);

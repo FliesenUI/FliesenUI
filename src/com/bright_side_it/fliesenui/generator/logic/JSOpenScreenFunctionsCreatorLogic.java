@@ -52,6 +52,12 @@ public class JSOpenScreenFunctionsCreatorLogic {
 			result.append("    });\n");
     	}
     	result.append("\n");
+    	
+        
+    	result.append("    //: scroll to top\n");
+    	result.append("    document.body.scrollTop = 0;\n");
+    	result.append("    document.documentElement.scrollTop = 0;\n");
+    	result.append("\n");
     	result.append("    //: set initial values\n");
     	for (ScreenDefinition i: project.getScreenDefinitionsMap().values()){
     		String screenIDPrefix = GeneratorUtil.createScreenIDPrefix(i);

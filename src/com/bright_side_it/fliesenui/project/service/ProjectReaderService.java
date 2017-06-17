@@ -12,23 +12,29 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
+import com.bright_side_it.fliesenui.base.util.BaseUtil;
+import com.bright_side_it.fliesenui.colorpalette.dao.ColorPaletteDAO;
+import com.bright_side_it.fliesenui.colorpalette.dao.ColorPaletteDAOResult;
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette;
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette.Shade;
 import com.bright_side_it.fliesenui.dto.dao.DTODefinitionDAO;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.dto.model.DTODefinitionDAOResult;
 import com.bright_side_it.fliesenui.dto.model.DTOField;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
+import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.imageasset.dao.ImageAssetDefinitionDAO;
 import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.dao.PluginDefinitionDAO;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinitionDAOResult;
-import com.bright_side_it.fliesenui.project.dao.ProjectResourceDAO;
 import com.bright_side_it.fliesenui.project.dao.ProjectDefinitionDAO;
+import com.bright_side_it.fliesenui.project.dao.ProjectResourceDAO;
+import com.bright_side_it.fliesenui.project.model.Project;
+import com.bright_side_it.fliesenui.project.model.ProjectDefinitionDAOResult;
 import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceFormat;
 import com.bright_side_it.fliesenui.project.model.ProjectResource.ResourceType;
-import com.bright_side_it.fliesenui.project.model.Project;
-import com.bright_side_it.fliesenui.project.model.ProjectDefinitionDAOResult;
 import com.bright_side_it.fliesenui.screendefinition.dao.ScreenDefinitionDAO;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
@@ -68,6 +74,8 @@ public class ProjectReaderService {
             result.setImageAssetDefinitionProblemsMap(new TreeMap<String, ResourceDefinitionProblem>());
             result.setStringResourceMap(new TreeMap<String, StringResource>());
             result.setStringResourceProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
+            result.setColorPaletteMap(new TreeMap<String, ColorPalette>());
+            result.setColorPaletteProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
             useUpToDateResources = new TreeSet<>();
         }
 
@@ -75,15 +83,46 @@ public class ProjectReaderService {
         readPluginDefinitions(baseDir, useUpToDateResources, result);
         readImageAssetDefinitions(baseDir, useUpToDateResources, result);
         readDTODefinitions(baseDir, useUpToDateResources, result);
+        readColorPalettes(baseDir, useUpToDateResources, result);
         addDerivedDTODefinitions(result);
         
         readScreenDefinitions(baseDir, useUpToDateResources, result);
         readStringResources(baseDir, useUpToDateResources, result);
+        
+        result.setAccentColor(readAccentColor(result));
 
         return result;
     }
 
-    /**
+    private String readAccentColor(Project project) {
+    	if (project.getProjectDefinition() == null){
+    		return null;
+    	}
+    	String primaryPalette = project.getProjectDefinition().getThemePrimaryPalette();
+    	if (primaryPalette == null){
+    		return null;
+    	}
+    	String result = null;
+    	ColorPalette customColorPalette = project.getColorPaletteMap().get(primaryPalette);
+    	if (customColorPalette != null){
+    		result = BaseUtil.toEmptyMapIfNull(customColorPalette.getColors()).get(Shade.SHADE_500);
+    		if (result != null){
+    			return result;
+    		}
+    		result = GeneratorUtil.getPrimaryColorFromDefaultPaletteName(customColorPalette.getExtendedPalette());
+    		if (result != null){
+    			return result;
+    		}
+    	}
+    	
+    	result = GeneratorUtil.getPrimaryColorFromDefaultPaletteName(primaryPalette);
+		if (result != null){
+			return result;
+		}
+		return "#3f51b5";
+	}
+
+	/**
      * for each DTO create another DTO with the suffix "List" if it doesn't exist yet
      * @param result
      */
@@ -312,6 +351,58 @@ public class ProjectReaderService {
         //                result.getDTODefinitionsMap().put(dtoDefinition.getID(), dtoDefinition);
         //            }
         //        }
+    }
+    
+    private void readColorPalettes(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {
+    	ProjectResourceDAO definitionResourceDAO = new ProjectResourceDAO();
+    	Set<String> existingIDs = new TreeSet<String>();
+    	
+    	for (ProjectResource i : definitionResourceDAO.getAllColorPalettes(dir)) {
+    		if (!upToDateResources.contains(i)) {
+    			File file = definitionResourceDAO.getFile(dir, result.getProjectDefinition(), i);
+    			ColorPaletteDAOResult readResult = new ColorPaletteDAO().readColorPalette(file);
+    			if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
+    				result.getColorPaletteProblemsMap().put(i.getId(), readResult.getProblems());
+    			}
+    			ColorPalette colorPalette = readResult.getColorPalette();
+    			if (colorPalette != null) {
+    				result.getColorPaletteMap().put(colorPalette.getID(), colorPalette);
+    			}
+    		}
+    		existingIDs.add(i.getId());
+    	}
+    	Set<String> deletedIDs = new TreeSet<>(result.getColorPaletteMap().keySet());
+    	deletedIDs.removeAll(existingIDs);
+    	
+    	for (String i : deletedIDs) {
+    		result.getColorPaletteProblemsMap().remove(i);
+    		result.getColorPaletteMap().remove(i);
+    	}
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	//
+    	//
+    	//
+    	//        for (File i : getAllDTOFiles(dir)) {
+    	//            DTODefinitionDAOResult readResult = new DTODefinitionDAO().readDTODefinition(i);
+    	//            String id = FileUtil.getFilenameWithoutEnding(i.getName());
+    	//            if (readResult.getDTODefinition() != null) {
+    	//                id = readResult.getDTODefinition().getID();
+    	//            }
+    	//            if ((readResult.getProblems() != null) && (!readResult.getProblems().isEmpty())) {
+    	//                //                log("Problems:\n" + dtoDefinitionProblemsToString(readResult.getProblems()));
+    	//                result.getDTODefinitionProblemsMap().put(id, readResult.getProblems());
+    	//            }
+    	//            DTODefinition dtoDefinition = readResult.getDTODefinition();
+    	//            if (dtoDefinition != null) {
+    	//                result.getDTODefinitionsMap().put(dtoDefinition.getID(), dtoDefinition);
+    	//            }
+    	//        }
     }
 
     private void readScreenDefinitions(File dir, Set<ProjectResource> upToDateResources, Project result) throws Exception {

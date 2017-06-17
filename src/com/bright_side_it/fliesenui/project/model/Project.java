@@ -3,6 +3,7 @@ package com.bright_side_it.fliesenui.project.model;
 import java.util.List;
 import java.util.Map;
 
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.imageasset.model.ImageAssetDefinition;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
@@ -17,6 +18,7 @@ public class Project {
     private Map<String, PluginDefinition> pluginDefinitionsMap;
     private Map<String, ImageAssetDefinition> imageAssetDefinitionsMap;
     private Map<String, StringResource> stringResourceMap;
+    private Map<String, ColorPalette> colorPaletteMap;
 
     private List<ResourceDefinitionProblem> projectDefinitionProblems;
     private Map<String, List<ResourceDefinitionProblem>> screenDefinitionProblemsMap;
@@ -24,7 +26,10 @@ public class Project {
     private Map<String, List<ResourceDefinitionProblem>> pluginDefinitionProblemsMap;
     private Map<String, ResourceDefinitionProblem> imageAssetDefinitionProblemsMap;
     private Map<String, List<ResourceDefinitionProblem>> stringResourceProblemsMap;
+    private Map<String, List<ResourceDefinitionProblem>> colorPaletteProblemsMap;
 
+    private String accentColor;
+    
     public ProjectDefinition getProjectDefinition() {
         return projectDefinition;
     }
@@ -121,4 +126,28 @@ public class Project {
 		this.stringResourceProblemsMap = stringResourceProblemsMap;
 	}
 
+	public Map<String, ColorPalette> getColorPaletteMap() {
+		return colorPaletteMap;
+	}
+
+	public void setColorPaletteMap(Map<String, ColorPalette> colorPaletteMap) {
+		this.colorPaletteMap = colorPaletteMap;
+	}
+
+	public Map<String, List<ResourceDefinitionProblem>> getColorPaletteProblemsMap() {
+		return colorPaletteProblemsMap;
+	}
+
+	public void setColorPaletteProblemsMap(Map<String, List<ResourceDefinitionProblem>> colorPaletteProblemsMap) {
+		this.colorPaletteProblemsMap = colorPaletteProblemsMap;
+	}
+
+	public String getAccentColor() {
+		return accentColor;
+	}
+
+	public void setAccentColor(String accentColor) {
+		this.accentColor = accentColor;
+	}
+	
 }

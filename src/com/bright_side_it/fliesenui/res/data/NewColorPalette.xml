@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ColorPalette extendedPalette="indigo">
+    <!-- by default shades 300, 500, 800 and A100 are used for primary and warn while A100, A200, A400 and A700 are used for accent -->
+    <!-- in primary palette shade 500 is used for buttons, dialog titles etc. -->
+    <!-- in background palette shade 50 is used for screen background -->
+    <!-- possible shades: 50, 100, .. 900, A100, A200, A400, A700 -->
+
+	<shade name="300">#880000</shade>
+	<shade name="500">#990000</shade>
+	<shade name="800">#aa0000</shade>
+	<shade name="A100">#bb00bb</shade>
+	<shade name="A200">#000088</shade>
+	<shade name="A400">#000099</shade>
+	<shade name="A700">#0000aa</shade>
+</ColorPalette>

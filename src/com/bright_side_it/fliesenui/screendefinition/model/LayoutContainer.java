@@ -4,7 +4,7 @@ import java.util.List;
 
 public class LayoutContainer implements CellItem, ScreenTopElement {
     public enum Orientation {
-        ROW, COLUMN
+        ROW, COLUMN, BORDER_LAYOUT
     }
 
     private List<LayoutBar> bars;
@@ -13,7 +13,11 @@ public class LayoutContainer implements CellItem, ScreenTopElement {
     private NodePath nodePath;
     private String id;
     private boolean visible;
-
+    private Double leftSizeInCM;
+    private Double rightSizeInCM;
+    private Double topSizeInCM;
+    private Double bottomSizeInCM;
+    private boolean isTopContainer;
 
     public List<LayoutBar> getBars() {
         return bars;
@@ -55,6 +59,46 @@ public class LayoutContainer implements CellItem, ScreenTopElement {
 
 	public void setVisible(boolean visible) {
 		this.visible = visible;
+	}
+
+	public Double getLeftSizeInCM() {
+		return leftSizeInCM;
+	}
+
+	public void setLeftSizeInCM(Double leftSizeInCM) {
+		this.leftSizeInCM = leftSizeInCM;
+	}
+
+	public Double getRightSizeInCM() {
+		return rightSizeInCM;
+	}
+
+	public void setRightSizeInCM(Double rightSizeInCM) {
+		this.rightSizeInCM = rightSizeInCM;
+	}
+
+	public Double getTopSizeInCM() {
+		return topSizeInCM;
+	}
+
+	public void setTopSizeInCM(Double topSizeInCM) {
+		this.topSizeInCM = topSizeInCM;
+	}
+
+	public Double getBottomSizeInCM() {
+		return bottomSizeInCM;
+	}
+
+	public void setBottomSizeInCM(Double bottomSizeInCM) {
+		this.bottomSizeInCM = bottomSizeInCM;
+	}
+
+	public boolean isTopContainer() {
+		return isTopContainer;
+	}
+
+	public void setTopContainer(boolean isTopContainer) {
+		this.isTopContainer = isTopContainer;
 	}
 
 }

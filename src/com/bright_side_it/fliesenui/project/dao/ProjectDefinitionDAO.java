@@ -46,7 +46,7 @@ public class ProjectDefinitionDAO {
     /**
      * possible colors themes (https://material.google.com/style/color.html#color-color-palette):
      */
-    private static final Set<String> POSSIBLE_PALATTES = new TreeSet<String>(Arrays.asList("red", "pink", "purple", "deep-purple", "indigo", "blue", "light-blue", "cyan",
+    public static final Set<String> DEFAULT_PALATTE_NAMES = new TreeSet<String>(Arrays.asList("red", "pink", "purple", "deep-purple", "indigo", "blue", "light-blue", "cyan",
             "teal", "green", "light-green", "lime", "yellow", "amber", "orange", "deep-orange", "brown", "grey", "blue-grey"));
 
 
@@ -158,13 +158,13 @@ public class ProjectDefinitionDAO {
         return result;
     }
 
-    public AssistValueListProvider getPossiblePaletteAttributeValues() {
-        List<AssistValue> assistValues = new ArrayList<AssistValue>();
-        for (String i : POSSIBLE_PALATTES) {
-            assistValues.add(BaseUtil.createAssistValue(null, i, null));
-        }
-        return new AssistValueList(assistValues);
-    }
+//    public AssistValueListProvider getPossiblePaletteAttributeValues() {
+//        List<AssistValue> assistValues = new ArrayList<AssistValue>();
+//        for (String i : POSSIBLE_PALATTES) {
+//            assistValues.add(BaseUtil.createAssistValue(null, i, null));
+//        }
+//        return new AssistValueList(assistValues);
+//    }
 
     public AssistValueListProvider getPossibleDarkThemeAttributeValues() {
         List<AssistValue> assistValues = new ArrayList<AssistValue>();

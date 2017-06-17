@@ -593,6 +593,12 @@ public class JSGeneratorService {
 			//: CodeMirror code editors require a call of refresh after set text
 			result.append("    setTimeout(function() {" + variableName + ".refresh();}, 0);\n");
 		}
+		for (BasicWidget i: BaseUtil.getAllBasicWidgets(screenDefinition, BasicWidgetType.TEXT_AREA)){
+			if (Boolean.TRUE.equals(i.getScrollToBottom())){
+    			result.append("    var textarea = document.getElementById('" + GeneratorUtil.getJSWidgetHTMLID(screenDefinition, i) + "');\n");
+    			result.append("    textarea.scrollTop = textarea.scrollHeight;\n");
+			}
+		}
 		result.append("};\n");
 		result.append("\n");
 		return result;
@@ -1180,6 +1186,13 @@ public class JSGeneratorService {
 		for (LayoutCell i : BaseUtil.getAllLayoutCells(screenDefinition)) {
 			if (i.getID() != null) {
 				result.append(linePrefix + GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, i.getID()) + " = " + i.isVisible() + ";\n");
+				
+				if (i.getHeadlineText() != null){
+					result.append(linePrefix + GeneratorUtil.getJSWidgetHeadlineTextVariableName(screenDefinition, i.getID()) + " = " + GeneratorUtil.getJSTextOrResource(i.getHeadlineText()) + ";\n");
+				}
+				if (i.getSubheadText() != null){
+					result.append(linePrefix + GeneratorUtil.getJSWidgetSubheadTextVariableName(screenDefinition, i.getID()) + " = " + GeneratorUtil.getJSTextOrResource(i.getSubheadText()) + ";\n");
+				}
 			}
 		}
 

@@ -20,6 +20,7 @@ import com.bright_side_it.fliesenui.validation.service.ProjectValidationService;
 
 public class CodeGeneratorService {
     private static final boolean DEV_IN_PROGRESS = false;
+	private static final String FLUI_CSS_ACCENT_COLOR_PLACEHOLDER = "§{accentColor}";
 
     public Project generateCode(File projectDir) throws Exception {
         log("Project dir: '" + projectDir.getAbsolutePath() + "'");
@@ -82,6 +83,8 @@ public class CodeGeneratorService {
         if (upToDateResources.isEmpty()) {
             copyWebResources(sourcesOutputDir, webDir);
         }
+        copyFLUICSS(project, sourcesOutputDir, webDir);
+        
         new StringJSCreatorLogic().generateStringJS(project, webLibDir);
         new JSGeneratorService().generateJS(project, upToDateResources, webDir);
         imageAssetOutpuDir.mkdirs();
@@ -139,6 +142,19 @@ public class CodeGeneratorService {
         FileUtil.removeFilesAndDirsInDir(webDir);
     }
 
+    private void copyFLUICSS(Project project, File baseDir, File webDir) throws Exception {
+        ResourceDAO resourceDA = new ResourceDAO();
+        File libDir = GeneratorUtil.getWebLibOutputDir(baseDir);
+        if (!libDir.exists()) {
+            libDir.mkdir();
+        }
+        if (!libDir.exists()) {
+            throw new Exception("Could not create lib-dir: '" + libDir.getAbsolutePath() + "'");
+        }
+        String fluiCSS = resourceDA.readTemplateAsString(Resource.FLUI_CSS);
+        fluiCSS = fluiCSS.replace(FLUI_CSS_ACCENT_COLOR_PLACEHOLDER, project.getAccentColor());
+        FileUtil.writeStringToFile(new File(libDir, "flui.css"), fluiCSS);
+	}
 
     private void copyWebResources(File baseDir, File webDir) throws Exception {
         ResourceDAO resourceDA = new ResourceDAO();
@@ -150,7 +166,10 @@ public class CodeGeneratorService {
             throw new Exception("Could not create lib-dir: '" + libDir.getAbsolutePath() + "'");
         }
 
-        resourceDA.copyResourceToDir(Resource.FLUI_CSS, libDir);
+        
+
+        
+//        resourceDA.copyResourceToDir(Resource.FLUI_CSS, libDir);
         resourceDA.copyResourceToDir(Resource.FLUI_UTIL_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_ANIMATE_JS, libDir);
         resourceDA.copyResourceToDir(Resource.ANGULAR_AREA_JS, libDir);

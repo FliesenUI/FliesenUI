@@ -5,11 +5,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
+import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
-import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.validation.logic.BasicWidgetValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.CodeEditorWidgetValidationLogic;
+import com.bright_side_it.fliesenui.validation.logic.ColorPaletteValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.DTODefinitionValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.EventHandlerValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.EventListenerValidationLogic;
@@ -40,6 +41,7 @@ public class ProjectValidationService {
         new SharedReplyInterfaceValidationLogic().validate(project);
         new ProjectDefinitionValidationLogic().validate(project);
         new IDValidationLogic().validate(project);
+        new ColorPaletteValidationLogic().validate(project);
         new StringResourceValidationLogic().validate(project);
         new DTODefinitionValidationLogic().validate(project);
         new ImageAssetValidationLogic().validate(project);

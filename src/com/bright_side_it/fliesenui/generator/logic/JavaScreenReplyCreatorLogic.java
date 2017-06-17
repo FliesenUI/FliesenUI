@@ -260,6 +260,14 @@ public class JavaScreenReplyCreatorLogic {
 
         for (LayoutCell i : BaseUtil.getAllLayoutCells(screenDefinition)) {
             createVisibleSetter(result, screenDefinition, i.getID(), signatures);
+            if (i.getID() != null){
+            	if (i.getHeadlineText() != null){
+            		createHeadlineTextSetter(result, screenDefinition, i, signatures);
+            	}
+            	if (i.getSubheadText() != null){
+            		createSubheadTextSetter(result, screenDefinition, i, signatures);
+            	}
+            }
         }
 
         for (LayoutBar i : BaseUtil.getAllLayoutBars(screenDefinition)) {
@@ -457,6 +465,40 @@ public class JavaScreenReplyCreatorLogic {
         result.append("        }\n");
         result.append("    }\n");
         result.append("\n");
+    }
+    
+    private void createHeadlineTextSetter(StringBuilder result, ScreenDefinition screenDefinition, LayoutCell cell, List<String> signatures) throws Exception {
+    	String javaSetterMethodName = BaseUtil.buildIDWithPrefix(cell.getID() + "HeadlineText", "set");
+    	String propertyName = GeneratorUtil.getJSWidgetHeadlineTextVariableName(screenDefinition, cell);
+    	appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(String text) {\n");
+    	result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
+    	result.append("        if (text == null) {\n");
+    	result.append("            replyDTO.getVariableValues().remove(\"" + propertyName + "\");\n");
+    	result.append("        } else {\n");
+    	result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", text);\n");
+    	result.append("        }\n");
+    	result.append("        if (recordMode){\n");
+    	result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(text) + \");\");\n");
+    	result.append("        }\n");
+    	result.append("    }\n");
+    	result.append("\n");
+    }
+    
+    private void createSubheadTextSetter(StringBuilder result, ScreenDefinition screenDefinition, LayoutCell cell, List<String> signatures) throws Exception {
+    	String javaSetterMethodName = BaseUtil.buildIDWithPrefix(cell.getID() + "SubheadText", "set");
+    	String propertyName = GeneratorUtil.getJSWidgetSubheadTextVariableName(screenDefinition, cell);
+    	appendAndAdd(result, signatures, "    public void " + javaSetterMethodName + "(String text) {\n");
+    	result.append("        replyDTO.getVariablesToSet().add(\"" + propertyName + "\");\n");
+    	result.append("        if (text == null) {\n");
+    	result.append("            replyDTO.getVariableValues().remove(\"" + propertyName + "\");\n");
+    	result.append("        } else {\n");
+    	result.append("            replyDTO.getVariableValues().put(\"" + propertyName + "\", text);\n");
+    	result.append("        }\n");
+    	result.append("        if (recordMode){\n");
+    	result.append("            addRecordedAction(\"" + javaSetterMethodName + "(\" + escapeString(text) + \");\");\n");
+    	result.append("        }\n");
+    	result.append("    }\n");
+    	result.append("\n");
     }
     
     private void createMarkdownViewTextSetter(StringBuilder result, ScreenDefinition screenDefinition, BasicWidget widget, List<String> signatures) throws Exception {

@@ -30,6 +30,16 @@ public class LayoutCellValidationLogic {
         if (cell.getHeight() != null) {
             validateHeight(project, screenDefinition, cell);
         }
+        if ((cell.getHeadlineText() != null) && (cell.getID() == null)){
+    		ValidationUtil.addError(project, screenDefinition, cell.getNodePath(), LayoutCellDAO.HEADLINE_TEXT_ATTRIBUTE_NAME,
+                    ProblemType.CELL_HEADLINE_WITHOUT_ID, "If the cell has a headline text, it needs to have an ID");
+        	
+        }
+        if ((cell.getSubheadText() != null) && (cell.getID() == null)){
+        	ValidationUtil.addError(project, screenDefinition, cell.getNodePath(), LayoutCellDAO.SUBHEAD_TEXT_ATTRIBUTE_NAME,
+        			ProblemType.CELL_SUBHEAD_WITHOUT_ID, "If the cell has a sub headline text, it needs to have an ID");
+        	
+        }
     }
 
     private void validateHeight(Project project, ScreenDefinition screenDefinition, LayoutCell cell) {

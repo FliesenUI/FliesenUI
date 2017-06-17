@@ -105,4 +105,17 @@ public class XMLUtil {
         }
     }
 
+    public static Double getDoubleAttributeOptional(Node node, String attributeName, Double valueIfEmpty) throws Exception {
+    	String string = getStringAttributeOptional(node, attributeName, null);
+    	if (string == null) {
+    		return valueIfEmpty;
+    	}
+    	try {
+    		return Double.parseDouble(string);
+    	} catch (Exception e) {
+    		throw new Exception(
+    				"Could not read double from value '" + string + "' in attribute '" + attributeName + "' in node '" + node.getLocalName() + "'");
+    	}
+    }
+
 }

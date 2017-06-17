@@ -27,7 +27,7 @@ public class TableWidgetStyleHTMLGeneratorLogic {
         }
         if (widget.isShowColumnHeader()){
         	HTMLTag headerTableTag = tagLogic.addTag(parentTag, "table", null, "style", "width:100%");
-        	createHeader(headerTableTag, screenDefinition, widget);
+        	createHeader(project, headerTableTag, screenDefinition, widget);
         }
 
         String style = "width:100%; ";
@@ -61,8 +61,10 @@ public class TableWidgetStyleHTMLGeneratorLogic {
 		return 1;
 	}
     
-	private void createHeader(HTMLTag parentTag, ScreenDefinition screenDefinition, TableWidget widget) throws Exception {
-        HTMLTag rowTag = tagLogic.addTag(parentTag, "tr", null, "layout", "row", "layout-wrap", "", "style", "background-color:#3f51b5; color:white");
+	private void createHeader(Project project, HTMLTag parentTag, ScreenDefinition screenDefinition, TableWidget widget) throws Exception {
+        String accentColor = project.getAccentColor();
+		HTMLTag rowTag = tagLogic.addTag(parentTag, "tr", null, "layout", "row", "layout-wrap", "", "style", "background-color:" + accentColor + "; color:white");
+//        HTMLTag rowTag = tagLogic.addTag(parentTag, "tr", null, "layout", "row", "layout-wrap", "", "style", "background-color:#3f51b5; color:white");
         double columnWidthFactor = getColumnWidthFactor(widget);
         int tableColumnIndex = 0;
         int savedSize = 0;

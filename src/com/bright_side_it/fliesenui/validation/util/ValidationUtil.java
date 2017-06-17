@@ -11,10 +11,12 @@ import org.w3c.dom.Node;
 
 import com.bright_side_it.fliesenui.base.util.BaseConstants;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
+import com.bright_side_it.fliesenui.colorpalette.dao.ColorPaletteDAO;
+import com.bright_side_it.fliesenui.colorpalette.dao.ColorPaletteDAOResult;
+import com.bright_side_it.fliesenui.colorpalette.model.ColorPalette;
 import com.bright_side_it.fliesenui.dto.dao.DTODefinitionDAO;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.dto.model.DTODefinitionDAOResult;
-import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.plugin.dao.PluginDefinitionDAO;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinitionDAOResult;
 import com.bright_side_it.fliesenui.project.dao.ProjectDefinitionDAO;
@@ -23,11 +25,11 @@ import com.bright_side_it.fliesenui.project.model.ProjectDefinitionDAOResult;
 import com.bright_side_it.fliesenui.screendefinition.dao.ScreenDefinitionDAO;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
+import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
 import com.bright_side_it.fliesenui.stringres.model.StringResource;
 import com.bright_side_it.fliesenui.stringres.model.StringResourceItem;
-import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 
 public class ValidationUtil {
     public static void addError(Project project, ScreenDefinition screenDefinition, NodePath nodePath, String attribute,
@@ -47,6 +49,22 @@ public class ValidationUtil {
         }
         List<ResourceDefinitionProblem> problemList = project.getScreenDefinitionProblemsMap().get(screenDefinition.getID());
         problemList.add(createResourceDefinitionProblem(nodePath, attribute, type, message));
+    }
+    
+    public static void addError(Project project, ColorPalette colorPalette, NodePath nodePath, String attribute,
+    		ProblemType type, String message) {
+    	if (project.getColorPaletteProblemsMap() == null) {
+    		project.setScreenDefinitionProblemsMap(new TreeMap<String, List<ResourceDefinitionProblem>>());
+    	}
+    	if (project.getColorPaletteProblemsMap() == null){
+    		throw new RuntimeException("project.getColorPaletteProblemsMap() is null");
+    	}
+    	
+    	if (project.getColorPaletteProblemsMap().get(colorPalette.getID()) == null) {
+    		project.getColorPaletteProblemsMap().put(colorPalette.getID(), new ArrayList<ResourceDefinitionProblem>());
+    	}
+    	List<ResourceDefinitionProblem> problemList = project.getColorPaletteProblemsMap().get(colorPalette.getID());
+    	problemList.add(createResourceDefinitionProblem(nodePath, attribute, type, message));
     }
     
     public static void addError(Project project, StringResource stringResource, NodePath nodePath, String attribute,
@@ -98,6 +116,17 @@ public class ValidationUtil {
     		String foundAttribute = attributes.item(i).getNodeName();
     		if (!allowedAttributeNames.contains(foundAttribute)){
     			ScreenDefinitionDAO.addError(result, nodePath, foundAttribute, ProblemType.UNEXPECTED_XML_ATTRIBUTE
+    					, "The attribute '" + foundAttribute + "' was not expected in this tag ('" + node.getNodeName() + "'). " + createAllowedAttributesInfo(allowedAttributeNames));
+    		}
+    	}
+    }
+    
+    public static void validateAllowedAttributes(Node node, NodePath nodePath, Set<String> allowedAttributeNames, ColorPaletteDAOResult result){
+    	NamedNodeMap attributes = node.getAttributes();
+    	for (int i = 0; i < attributes.getLength(); i ++){
+    		String foundAttribute = attributes.item(i).getNodeName();
+    		if (!allowedAttributeNames.contains(foundAttribute)){
+    			ColorPaletteDAO.addError(result, nodePath, foundAttribute, ProblemType.UNEXPECTED_XML_ATTRIBUTE
     					, "The attribute '" + foundAttribute + "' was not expected in this tag ('" + node.getNodeName() + "'). " + createAllowedAttributesInfo(allowedAttributeNames));
     		}
     	}

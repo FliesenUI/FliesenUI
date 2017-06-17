@@ -17,12 +17,14 @@ public class BaseConstants {
     public static final String SCREEN_DIR_NAME = "screen";
     public static final String HISTORY_DIR_NAME = "history";
     public static final String DTO_DIR_NAME = "dto";
+    public static final String COLOR_PALETTE_DIR_NAME = "colorPalette";
     public static final String PLUGIN_DIR_NAME = "plugin";
     public static final String IMAGE_ASSET_DIR_NAME = "image";
     public static final String SCREEN_DEFINITION_FILE_ENDING = ".xml";
     public static final String DTO_DEFINITION_FILE_ENDING = ".xml";
     public static final String PLUGIN_DEFINITION_FILE_ENDING = ".xml";
     public static final String STRING_RESOURCE_HISTORY_FILE_ENDING = ".xml";
+    public static final String COLOR_PALETTE_FILE_ENDING = ".xml";
     public static final String PROJECT_FILE_NAME = "FliesenUIProject.xml";
     public static final String ID_ATTRIBUTE_NAME = "id";
 	public static final String IMAGE_ASSET_FILE_TO_IGNORE = "Thumbs.db";
