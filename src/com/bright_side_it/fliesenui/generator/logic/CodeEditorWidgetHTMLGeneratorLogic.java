@@ -13,9 +13,11 @@ public class CodeEditorWidgetHTMLGeneratorLogic {
     	HTMLTag divTag = tagLogic.addTag(parentTag, "div");
         tagLogic.addTag(divTag, "textarea", "&lt;testFromGenerator attrib='7'&gt;Test&lt;/testFromGenerator&gt;", "id", screenIDPrefix + widget.getID(), "name",
         		screenIDPrefix + widget.getID());
+        String style = "width:99%;height:99%;";
         if (widget.getHeight() != null){
-        	tagLogic.setAttribute(divTag, "style", "width:99%; height:" + widget.getHeight() + "px;");
+        	style += "height:" + widget.getHeight() + "px;";
         }
+        tagLogic.setAttribute(divTag, "style", style);
     }
 
 

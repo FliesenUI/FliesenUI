@@ -12,13 +12,14 @@ import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.XMLUtil;
 import com.bright_side_it.fliesenui.project.model.AssistValue;
 import com.bright_side_it.fliesenui.screendefinition.logic.NodePathLogic;
+import com.bright_side_it.fliesenui.screendefinition.logic.UnitValueLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
+import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer.Orientation;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefionitionReadException;
-import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer.Orientation;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
 public class LayoutContainerDAO {
@@ -26,6 +27,7 @@ public class LayoutContainerDAO {
 
     public static final String VISIBLE_ATTRIBUTE_NAME = "visible";
     public static final String ORIENTATION_ATTRIBUTE_NAME = "orientation";
+    private static final String HEIGHT_ATTRIBUTE_NAME = "height";
     private static final String ORIENTATION_VALUE_ROW = "row";
     private static final String ORIENTATION_VALUE_COLUMN = "column";
     private static final String ORIENTATION_VALUE_BORDER = "borderLayout";
@@ -33,6 +35,8 @@ public class LayoutContainerDAO {
     public static final String RIGHT_SIZE_ATTRIBUTE_VALUE = "rightSize";
     public static final String TOP_SIZE_ATTRIBUTE_VALUE = "topSize";
     public static final String BOTTOM_SIZE_ATTRIBUTE_VALUE = "bottomSize";
+
+    
     
 	private static final int FULL_SIZE = 100;
     
@@ -57,7 +61,10 @@ public class LayoutContainerDAO {
         layoutContainer.setTopSizeInCM(XMLUtil.getDoubleAttributeOptional(node, TOP_SIZE_ATTRIBUTE_VALUE, null));
         layoutContainer.setBottomSizeInCM(XMLUtil.getDoubleAttributeOptional(node, BOTTOM_SIZE_ATTRIBUTE_VALUE, null));
         layoutContainer.setTopContainer(!isPartOfCell(layoutCell));
+        layoutContainer.setHeight(new UnitValueLogic().parse(XMLUtil.getStringAttributeOptional(node, HEIGHT_ATTRIBUTE_NAME, null), null, null));
 
+        
+        
         addToParent(result, layoutCell, layoutContainer);
 
 
@@ -160,6 +167,7 @@ public class LayoutContainerDAO {
         result.add(BaseUtil.createAssistValue(null, ORIENTATION_ATTRIBUTE_NAME, "which may be either '" + ORIENTATION_VALUE_ROW + "' or '" + ORIENTATION_VALUE_COLUMN + "' and '" + ORIENTATION_VALUE_BORDER + "' for the top container"));
         result.add(BaseUtil.createAssistValue(false, BaseConstants.ID_ATTRIBUTE_NAME, "id"));
         result.add(BaseUtil.createAssistValue(false, VISIBLE_ATTRIBUTE_NAME, "visibility"));
+        result.add(BaseUtil.createAssistValue(false, HEIGHT_ATTRIBUTE_NAME, "height"));
         result.add(BaseUtil.createAssistValue(false, TOP_SIZE_ATTRIBUTE_VALUE, "for border layout: size of top pane in cm"));
         result.add(BaseUtil.createAssistValue(false, BOTTOM_SIZE_ATTRIBUTE_VALUE, "for border layout: size of bottom pane in cm"));
         result.add(BaseUtil.createAssistValue(false, LEFT_SIZE_ATTRIBUTE_VALUE, "for border layout: size of left pane in cm"));

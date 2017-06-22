@@ -4,6 +4,7 @@ import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.generator.model.HTMLTag;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
+import com.bright_side_it.fliesenui.screendefinition.logic.UnitValueLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
@@ -29,6 +30,11 @@ public class ContainerHTMLGeneratorLogic {
         if ((layoutContainer.getOrientation() == Orientation.COLUMN) || (layoutContainer.getOrientation() == Orientation.ROW)){
         	tagLogic.setAttribute(result, "layout", toString(layoutContainer.getOrientation()));
         }
+
+        if (layoutContainer.getHeight() != null){
+            tagLogic.setAttribute(result, "style", "height: " + new UnitValueLogic().toCSSString(layoutContainer.getHeight()));
+        }
+
         
         if (layoutContainer.getID() != null){
             tagLogic.setAttribute(result, "ng-show", GeneratorUtil.getJSWidgetVisibleVariableName(screenDefinition, layoutContainer.getID()));
@@ -64,6 +70,8 @@ public class ContainerHTMLGeneratorLogic {
     	}
     	if (layoutContainer.getRightSizeInCM() != null){
     		rightString = "right: " + layoutContainer.getRightSizeInCM() + "cm;";
+    	} else {
+    		rightString = "right: 0;";
     	}
     	
     	switch (bar.getPosition()) {
@@ -76,11 +84,11 @@ public class ContainerHTMLGeneratorLogic {
 //			style += "background-color: #0000ff; ";
 			break;
 		case LEFT:
-			style += "left:0; width:" + layoutContainer.getLeftSizeInCM() + "; " +  "overflow: auto;" + topString + bottomString;
+			style += "left:0; width:" + layoutContainer.getLeftSizeInCM() + "cm; " +  "overflow: auto;" + topString + bottomString;
 //			style += "background-color: #00ff00; ";
 			break;
 		case RIGHT:
-			style += "right:0; width:" + layoutContainer.getRightSizeInCM() + "; " +  "overflow: auto;" + topString + bottomString;
+			style += "right:0; width:" + layoutContainer.getRightSizeInCM() + "cm; " +  "overflow: auto;" + topString + bottomString;
 //			style += "background-color: #aaffff; ";
 			break;
 		case CENTER:

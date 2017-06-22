@@ -26,7 +26,6 @@ import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.EventHandlerContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.EventListener;
 import com.bright_side_it.fliesenui.screendefinition.model.EventListener.EventListenType;
-import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 import com.bright_side_it.fliesenui.screendefinition.model.EventListenerContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.EventParameterContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSourceContainer;
@@ -42,7 +41,6 @@ import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetColumn;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem;
 import com.bright_side_it.fliesenui.screendefinition.model.TableWidgetItem.TableWidgetType;
-import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 import com.bright_side_it.fliesenui.screendefinition.model.Timer;
 
 public class BaseUtil {
@@ -698,6 +696,14 @@ public class BaseUtil {
         }
         return color.substring(1).matches("[0-9,a-f,A-F]*");
     }
+
+	public static <K, V> Map<K, V> invertMap(Map<V, K> map) {
+		Map<K, V> result = new TreeMap<>();
+		for (Map.Entry<V, K> i: map.entrySet()){
+			result.put(i.getValue(), i.getKey());
+		}
+		return result;
+	}
 
     
 }

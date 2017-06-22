@@ -18,6 +18,7 @@ public class LayoutContainer implements CellItem, ScreenTopElement {
     private Double topSizeInCM;
     private Double bottomSizeInCM;
     private boolean isTopContainer;
+    private UnitValue height;
 
     public List<LayoutBar> getBars() {
         return bars;
@@ -99,6 +100,14 @@ public class LayoutContainer implements CellItem, ScreenTopElement {
 
 	public void setTopContainer(boolean isTopContainer) {
 		this.isTopContainer = isTopContainer;
+	}
+
+	public UnitValue getHeight() {
+		return height;
+	}
+
+	public void setHeight(UnitValue height) {
+		this.height = height;
 	}
 
 }

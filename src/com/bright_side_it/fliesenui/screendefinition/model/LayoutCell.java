@@ -10,7 +10,7 @@ public class LayoutCell {
 
 	private List<CellItem> cellItems;
     private int size;
-    private Integer height;
+    private UnitValue height;
     private NodePath nodePath;
     private String backgroundColor;
     private String id;
@@ -52,13 +52,13 @@ public class LayoutCell {
         this.backgroundColor = backgroundColor;
     }
 
-    public Integer getHeight() {
-        return height;
-    }
+	public UnitValue getHeight() {
+		return height;
+	}
 
-    public void setHeight(Integer height) {
-        this.height = height;
-    }
+	public void setHeight(UnitValue height) {
+		this.height = height;
+	}
 
 	public String getID() {
 		return id;

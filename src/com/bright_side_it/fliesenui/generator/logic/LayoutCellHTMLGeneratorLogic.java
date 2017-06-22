@@ -4,6 +4,7 @@ import com.bright_side_it.fliesenui.base.util.BaseConstants.BrowserType;
 import com.bright_side_it.fliesenui.generator.model.HTMLTag;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.project.model.Project;
+import com.bright_side_it.fliesenui.screendefinition.logic.UnitValueLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
@@ -21,7 +22,6 @@ public class LayoutCellHTMLGeneratorLogic {
     private HTMLTagLogic tagLogic = new HTMLTagLogic();
 
     public void generateHTML(HTMLTag parentTag, Project project, ScreenDefinition screenDefinition, LayoutBar bar, LayoutCell cell, BrowserType browserType) throws Exception {
-    	
     	HTMLTag result = tagLogic.addTag(parentTag, "div", null, "flex", "" + cell.getSize());
     	HTMLTag contentParentTag = result;
     	if (cell.getCellStyle() == CellStyle.CARD){
@@ -72,7 +72,7 @@ public class LayoutCellHTMLGeneratorLogic {
             style += "background-color: " + cell.getBackgroundColor() + ";";
         }
         if (cell.getHeight() != null) {
-            style += "height: " + cell.getHeight() + "px;";
+            style += "height: " + new UnitValueLogic().toCSSString(cell.getHeight());
         }
         if (style.length() > 0) {
             tagLogic.setAttribute(result, "style", style);

@@ -43,7 +43,7 @@ public class LayoutCellValidationLogic {
     }
 
     private void validateHeight(Project project, ScreenDefinition screenDefinition, LayoutCell cell) {
-        if (cell.getHeight() <= 0) {
+        if (cell.getHeight().getValue() <= 0) {
             ValidationUtil.addError(project, screenDefinition, cell.getNodePath(), LayoutCellDAO.HEIGHT_ATTRIBUTE_NAME,
                     ProblemType.CELL_WRONG_HEIGHT, "Wrong cell height. It must be > 0 but was: " + cell.getHeight());
         }

@@ -11,6 +11,7 @@ public class LayoutBar {
     private String id;
     private boolean inBorderLayout;
     private Position position;
+//    private UnitValue height;
 
     public List<LayoutCell> getCells() {
         return cells;
@@ -60,4 +61,12 @@ public class LayoutBar {
 		this.position = position;
 	}
 
+//	public UnitValue getHeight() {
+//		return height;
+//	}
+//
+//	public void setHeight(UnitValue height) {
+//		this.height = height;
+//	}
+	
 }

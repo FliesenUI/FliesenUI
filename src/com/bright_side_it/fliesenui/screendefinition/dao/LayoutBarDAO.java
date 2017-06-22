@@ -12,17 +12,20 @@ import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.XMLUtil;
 import com.bright_side_it.fliesenui.project.model.AssistValue;
 import com.bright_side_it.fliesenui.screendefinition.logic.NodePathLogic;
+import com.bright_side_it.fliesenui.screendefinition.logic.UnitValueLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar.Position;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutContainer.Orientation;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
+import com.bright_side_it.fliesenui.screendefinition.model.UnitValue.Unit;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
 public class LayoutBarDAO {
     private static final String NODE_NAME = "bar";
     public static final String VISIBLE_ATTRIBUTE_NAME = "visible";
+//    private static final String HEIGHT_ATTRIBUTE_NAME = "height";
     public static final String POSITION_ATTRIBUTE_NAME = "position";
     public static final String POSITION_VALUR_NAME_LEFT = "left";
     public static final String POSITION_VALUR_NAME_TOP = "top";
@@ -40,6 +43,8 @@ public class LayoutBarDAO {
         LayoutBar layoutBar = new LayoutBar();
         layoutBar.setID(XMLUtil.getStringAttributeOptional(node, BaseConstants.ID_ATTRIBUTE_NAME, null));
         layoutBar.setVisible(XMLUtil.getBooleanAttributeOptional(node, VISIBLE_ATTRIBUTE_NAME, true));
+//        layoutBar.setHeight(new UnitValueLogic().parse(XMLUtil.getStringAttributeOptional(node, HEIGHT_ATTRIBUTE_NAME, null), null, null));
+        
         String positionString = XMLUtil.getStringAttributeOptional(node, POSITION_ATTRIBUTE_NAME, null);
         if (positionString != null){
         	layoutBar.setPosition(parsePosition(positionString));
@@ -101,6 +106,7 @@ public class LayoutBarDAO {
         result.add(BaseUtil.createAssistValue(false, BaseConstants.ID_ATTRIBUTE_NAME, "id"));
         result.add(BaseUtil.createAssistValue(false, VISIBLE_ATTRIBUTE_NAME, "visibility"));
         result.add(BaseUtil.createAssistValue(false, POSITION_ATTRIBUTE_NAME, "if part of border layout: position on the bar"));
+//        result.add(BaseUtil.createAssistValue(false, HEIGHT_ATTRIBUTE_NAME, "height"));
         return result;
     }
 

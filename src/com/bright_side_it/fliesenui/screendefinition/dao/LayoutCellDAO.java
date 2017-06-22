@@ -12,6 +12,7 @@ import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.base.util.XMLUtil;
 import com.bright_side_it.fliesenui.project.model.AssistValue;
 import com.bright_side_it.fliesenui.screendefinition.logic.NodePathLogic;
+import com.bright_side_it.fliesenui.screendefinition.logic.UnitValueLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutBar;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell;
 import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell.AlignType;
@@ -19,6 +20,7 @@ import com.bright_side_it.fliesenui.screendefinition.model.LayoutCell.CellStyle;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefionitionReadException;
+import com.bright_side_it.fliesenui.screendefinition.model.UnitValue.Unit;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
 public class LayoutCellDAO {
@@ -54,7 +56,7 @@ public class LayoutCellDAO {
 
         int size = XMLUtil.getIntAttributeRequired(node, SIZE_ATTRIBUTE_NAME);
         layoutCell.setSize(size);
-        layoutCell.setHeight(XMLUtil.getIntegerAttributeOptional(node, HEIGHT_ATTRIBUTE_NAME, null));
+        layoutCell.setHeight(new UnitValueLogic().parse(XMLUtil.getStringAttributeOptional(node, HEIGHT_ATTRIBUTE_NAME, null), Unit.PIXEL, null));
         layoutCell.setBackgroundColor(XMLUtil.getStringAttributeOptional(node, BACKGROUND_COLOR_ATTRIBUTE_NAME, null));
         layoutCell.setID(XMLUtil.getStringAttributeOptional(node, BaseConstants.ID_ATTRIBUTE_NAME, null));
         layoutCell.setVisible(XMLUtil.getBooleanAttributeOptional(node, VISIBLE_ATTRIBUTE_NAME, true));
