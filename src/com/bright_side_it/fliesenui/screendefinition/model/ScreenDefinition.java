@@ -14,7 +14,8 @@ public class ScreenDefinition implements ResourceDefinition, EventListenerContai
     private String parameterDTOID;
     private String id;
     private NodePath nodePath;
-
+    private List<CallbackMethod> callbackMethods;
+    
     public NodePath getNodePath() {
         return nodePath;
     }
@@ -77,6 +78,14 @@ public class ScreenDefinition implements ResourceDefinition, EventListenerContai
 
 	public void setEventListeners(List<EventListener> eventListeners) {
 		this.eventListeners = eventListeners;
+	}
+
+	public List<CallbackMethod> getCallbackMethods() {
+		return callbackMethods;
+	}
+
+	public void setCallbackMethods(List<CallbackMethod> callbackMethods) {
+		this.callbackMethods = callbackMethods;
 	}
 
 }

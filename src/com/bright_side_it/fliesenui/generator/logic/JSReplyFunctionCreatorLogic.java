@@ -12,6 +12,7 @@ import com.bright_side_it.fliesenui.screendefinition.model.TableWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
 
 public class JSReplyFunctionCreatorLogic {
+	
     public StringBuilder createProcessReplyFunction(ScreenDefinition screenDefinition, String screenIDPrefix) throws Exception {
         StringBuilder result = new StringBuilder();
         result.append(screenIDPrefix + "processReply = function(jsonString){\n");
@@ -202,13 +203,13 @@ public class JSReplyFunctionCreatorLogic {
         result.append("    var inputDialogParameters = reply.inputDialogParameters;\n");
         result.append("    if (typeof inputDialogParameters != \"undefined\") {\n");
         result.append(
-                "        scope.showInputDialog(inputDialogParameters.referenceID, inputDialogParameters.title, inputDialogParameters.textContent, inputDialogParameters.label, inputDialogParameters.initialValueText, inputDialogParameters.okText, inputDialogParameters.cancelText);\n");
+                "        scope.showInputDialog(inputDialogParameters.referenceID, inputDialogParameters.callbackData, inputDialogParameters.title, inputDialogParameters.textContent, inputDialogParameters.label, inputDialogParameters.initialValueText, inputDialogParameters.okText, inputDialogParameters.cancelText);\n");
         result.append("    }\n");
         result.append("\n");
         result.append("    var confirmDialogParameters = reply.confirmDialogParameters;\n");
         result.append("    if (typeof confirmDialogParameters != \"undefined\") {\n");
         result.append(
-                "        scope.showConfirm(confirmDialogParameters.referenceID, confirmDialogParameters.title, confirmDialogParameters.textContent, confirmDialogParameters.okText, confirmDialogParameters.cancelText);\n");
+                "        scope.showConfirm(confirmDialogParameters.referenceID, confirmDialogParameters.callbackData, confirmDialogParameters.title, confirmDialogParameters.textContent, confirmDialogParameters.okText, confirmDialogParameters.cancelText);\n");
         result.append("    }\n");
         return result;
     }

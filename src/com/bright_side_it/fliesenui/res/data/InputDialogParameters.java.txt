@@ -2,6 +2,7 @@ package generated.fliesenui.core;
 
 public class InputDialogParameters {
 	private String referenceID;
+	private String callbackData;
 	private String title;
 	private String textContent;
 	private String label;
@@ -49,6 +50,12 @@ public class InputDialogParameters {
 	}
 	public void setCancelText(String cancelText) {
 		this.cancelText = cancelText;
+	}
+	public String getCallbackData() {
+		return callbackData;
+	}
+	public void setCallbackData(String callbackData) {
+		this.callbackData = callbackData;
 	}
 	
 }

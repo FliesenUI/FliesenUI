@@ -4,6 +4,7 @@ import java.util.List;
 
 public class ListChooserParameters {
 	private String referenceID;
+	private String callbackData;
 	private String title;
 	private boolean multiSelect;
 	private boolean showIcons;
@@ -60,6 +61,11 @@ public class ListChooserParameters {
 	public void setShowFilter(boolean showFilter) {
 		this.showFilter = showFilter;
 	}
+	public String getCallbackData() {
+		return callbackData;
+	}
+	public void setCallbackData(String callbackData) {
+		this.callbackData = callbackData;
+	}
 
-	
 }

@@ -11,6 +11,7 @@ import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter;
 import com.bright_side_it.fliesenui.generator.model.ReplyToCallTranslationParameter.DataType;
 import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation;
+import com.bright_side_it.fliesenui.generator.model.RequestToCallTranslation.SpecialMethodType;
 import com.bright_side_it.fliesenui.generator.util.GeneratorConstants;
 import com.bright_side_it.fliesenui.generator.util.GeneratorUtil;
 import com.bright_side_it.fliesenui.plugin.model.PluginDefinition;
@@ -64,10 +65,11 @@ public class RequestToCallTranslationBuilder {
         RequestToCallTranslation result = new RequestToCallTranslation();
         result.setActionName(GeneratorConstants.REQUEST_ACTION_ON_INNPUT_DIALOG_RESULT);
         result.setMethodName(GeneratorConstants.JAVA_METHOD_NAME_ON_INNPUT_DIALOG_RESULT);
-        List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
-        result.setParameter(parameter);
-        parameter.add(createParameter("referenceID", DataType.STRING));
-        parameter.add(createParameter("result", DataType.STRING));
+        result.setSpecialMethodType(SpecialMethodType.STRING_INPUT_DIALOG);
+//        List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
+//        result.setParameter(parameter);
+//        parameter.add(createParameter("referenceID", DataType.STRING));
+//        parameter.add(createParameter("result", DataType.STRING));
         return result;
     }
 
@@ -75,10 +77,11 @@ public class RequestToCallTranslationBuilder {
         RequestToCallTranslation result = new RequestToCallTranslation();
         result.setActionName(GeneratorConstants.REQUEST_ACTION_ON_CONFIRM_DIALOG_RESULT);
         result.setMethodName(GeneratorConstants.JAVA_METHOD_NAME_ON_CONFIRM_DIALOG_RESULT);
-        List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
-        result.setParameter(parameter);
-        parameter.add(createParameter("referenceID", DataType.STRING));
-        parameter.add(createParameter("result", DataType.BOOLEAN));
+        result.setSpecialMethodType(SpecialMethodType.CONFIRM_DIALOG);
+//        List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
+//        result.setParameter(parameter);
+//        parameter.add(createParameter("referenceID", DataType.STRING));
+//        parameter.add(createParameter("result", DataType.BOOLEAN_NOT_NULL));
         return result;
     }
 
@@ -86,10 +89,11 @@ public class RequestToCallTranslationBuilder {
     	RequestToCallTranslation result = new RequestToCallTranslation();
     	result.setActionName(GeneratorConstants.REQUEST_ACTION_ON_LIST_CHOOSER_RESULT);
     	result.setMethodName(GeneratorConstants.JAVA_METHOD_NAME_ON_LIST_CHOOSER_RESULT);
-    	List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
-    	result.setParameter(parameter);
-    	parameter.add(createParameter("referenceID", DataType.STRING));
-    	parameter.add(createParameter("selectedIDs", DataType.LIST_OF_STRING));
+    	result.setSpecialMethodType(SpecialMethodType.LIST_CHOOSER);
+//    	List<ReplyToCallTranslationParameter> parameter = new ArrayList<ReplyToCallTranslationParameter>();
+//    	result.setParameter(parameter);
+//    	parameter.add(createParameter("referenceID", DataType.STRING));
+//    	parameter.add(createParameter("selectedIDs", DataType.LIST_OF_STRING));
     	return result;
     }
     
@@ -181,7 +185,7 @@ public class RequestToCallTranslationBuilder {
     				resultItem.setActionName(GeneratorUtil.createJavaOnChangedMethodName(basicWidget));
     				resultItem.setMethodName(GeneratorUtil.createJavaOnChangedMethodName(basicWidget));
                     List<ReplyToCallTranslationParameter> parameters = createParameters(project, screenDefinition, basicWidget, widgetMap);
-                    parameters.add(0, createParameter(GeneratorConstants.SELECTED_ID_PARAMETER_NAME, DataType.BOOLEAN));
+                    parameters.add(0, createParameter(GeneratorConstants.SELECTED_ID_PARAMETER_NAME, DataType.BOOLEAN_NOT_NULL));
                     resultItem.setParameter(parameters);
     				result.add(resultItem);
     			}
@@ -373,7 +377,7 @@ public class RequestToCallTranslationBuilder {
                     if (i.getWidgetProperty() == WidgetProperty.TEXT) {
                         resultItem.setDataType(DataType.STRING);
                     } else if (i.getWidgetProperty() == WidgetProperty.SELECTED) {
-                        resultItem.setDataType(DataType.BOOLEAN);
+                        resultItem.setDataType(DataType.BOOLEAN_NOT_NULL);
                     } else {
                         throw new Exception("Unkonwn widget property: " + i.getWidgetProperty());
                     }
@@ -414,7 +418,7 @@ public class RequestToCallTranslationBuilder {
     private DataType mapDataType(BasicType type) throws Exception {
         switch (type) {
         case BOOLEAN:
-            return DataType.BOOLEAN;
+            return DataType.BOOLEAN_NOT_NULL;
         case STRING:
             return DataType.STRING;
         case LONG:

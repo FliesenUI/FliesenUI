@@ -47,7 +47,7 @@ public class JavaScreenDialogCreatorLogic {
 
     public StringBuilder createInputDialogFunction(String screenIDPrefix) {
         StringBuilder result = new StringBuilder();
-        result.append("    $scope.showInputDialog = function(referenceID, title, textContent, label, initialValueText, okText, cancelText) {\n");
+        result.append("    $scope.showInputDialog = function(referenceID, callbackData, title, textContent, label, initialValueText, okText, cancelText) {\n");
         result.append("        var confirm = $mdDialog.prompt()\n");
         result.append("          .title(title)\n");
         result.append("          .textContent(textContent)\n");
@@ -60,6 +60,7 @@ public class JavaScreenDialogCreatorLogic {
         result.append("        $mdDialog.show(confirm).then(function(result) {\n");
         result.append("            var request = " + screenIDPrefix + "createRequest(\"" + GeneratorConstants.REQUEST_ACTION_ON_INNPUT_DIALOG_RESULT + "\");\n");
         result.append("            request.parameters[\"referenceID\"] = referenceID;\n");
+        result.append("            request.parameters[\"callbackData\"] = callbackData;\n");
         result.append("            if (typeof result != \"undefined\"){\n");
         result.append("                request.parameters[\"result\"] = result;\n");
         result.append("                " + screenIDPrefix + "executeRequest(request);\n");
@@ -70,6 +71,7 @@ public class JavaScreenDialogCreatorLogic {
         result.append("        }, function() {\n");
         result.append("            var request = " + screenIDPrefix + "createRequest(\"onInputDialogResult\");\n");
         result.append("            request.parameters[\"referenceID\"] = referenceID;\n");
+        result.append("            request.parameters[\"callbackData\"] = callbackData;\n");
         result.append("            " + screenIDPrefix + "executeRequest(request);\n");
         result.append("        });\n");
         result.append("    };\n");
@@ -80,7 +82,7 @@ public class JavaScreenDialogCreatorLogic {
     public StringBuilder createConfirmDialogFunction(String screenIDPrefix) {
         StringBuilder result = new StringBuilder();
 
-        result.append("    $scope.showConfirm = function(referenceID, title, textContent, okText, cancelText) {\n");
+        result.append("    $scope.showConfirm = function(referenceID, callbackData, title, textContent, okText, cancelText) {\n");
         result.append("        var confirm = $mdDialog.confirm()\n");
         result.append("              .title(title)\n");
         result.append("              .textContent(textContent)\n");
@@ -92,11 +94,13 @@ public class JavaScreenDialogCreatorLogic {
         result.append("            var request = " + screenIDPrefix + "createRequest(\"" + GeneratorConstants.REQUEST_ACTION_ON_CONFIRM_DIALOG_RESULT + "\");\n");
         result.append("            request.parameters[\"referenceID\"] = referenceID;\n");
         result.append("            request.parameters[\"result\"] = true;\n");
+        result.append("            request.parameters[\"callbackData\"] = callbackData;\n");
         result.append("            " + screenIDPrefix + "executeRequest(request);\n");
         result.append("        }, function() {\n");
         result.append("            var request = " + screenIDPrefix + "createRequest(\"onConfirmDialogResult\");\n");
         result.append("            request.parameters[\"referenceID\"] = referenceID;\n");
         result.append("            request.parameters[\"result\"] = false;\n");
+        result.append("            request.parameters[\"callbackData\"] = callbackData;\n");
         result.append("            " + screenIDPrefix + "executeRequest(request);\n");
         result.append("        });\n");
         result.append("    };\n");

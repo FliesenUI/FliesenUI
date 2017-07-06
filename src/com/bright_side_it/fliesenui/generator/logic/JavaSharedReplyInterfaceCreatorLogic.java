@@ -29,11 +29,13 @@ public class JavaSharedReplyInterfaceCreatorLogic {
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelImageAssetList;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelList;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIImageAssets.ImageAsset;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAbstractReply;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAbstractReplyContainer;\n");
 
 		result.append("\n");
 		result.append(createDTOImportStatements(project, sharedReplyInterface));
 		result.append("\n");
-		result.append("public interface " + interfaceName + "{\n");
+		result.append("public interface " + interfaceName + " extends FLUIAbstractReplyContainer{\n");
 		result.append(createMethodSignatures(sharedReplyInterface, screenToReplySignaturesMap));
         result.append("}");
 

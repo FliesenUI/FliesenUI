@@ -250,6 +250,8 @@ public class CodeGeneratorService {
         resourceDA.copyResourceToDir(Resource.FLUI_KEY_EVENT_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CONFIRM_DIALOG_PARAMETERS_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.INPUT_DIALOG_PARAMETERS_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.CALLBACK_METHOD_CALL_JAVA, packageDir);
+        resourceDA.copyResourceToDir(Resource.FLUI_ABSTRCT_REPLY_CONTAINER_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CURSOR_POS_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CONTEXT_ASSIST_JAVA, packageDir);
         resourceDA.copyResourceToDir(Resource.CONTEXT_ASSIST_CHOICE_JAVA, packageDir);

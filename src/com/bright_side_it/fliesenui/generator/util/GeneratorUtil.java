@@ -23,6 +23,8 @@ import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectDefinition;
 import com.bright_side_it.fliesenui.project.model.SharedReplyInterface;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethodParameter;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethod.CallbackType;
 import com.bright_side_it.fliesenui.screendefinition.model.CellItem;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
@@ -831,7 +833,7 @@ public class GeneratorUtil {
 
 	public static String toJavaTypeName(DataType dataType) throws Exception{
 		switch (dataType) {
-		case BOOLEAN:
+		case BOOLEAN_NOT_NULL:
 			return "boolean";
 		case CHARACTER:
 			return "char";
@@ -895,6 +897,59 @@ public class GeneratorUtil {
 			return null;
 		}
 	}
+
+	public static String getDialogOptionsClassName(ScreenDefinition screenDefinition, CallbackType callbackType) throws Exception {
+		String prefix = BaseUtil.idToFirstCharUpperCase(screenDefinition.getID());
+		switch (callbackType) {
+		case CONFIRM:
+			return prefix + "ConfirmDialogOptions";
+		case STRING_INPUT:
+			return prefix + "StringInputDialogOptions";
+		case LIST_CHOOSER:
+			return prefix + "ListChoosrDialogOptions";
+		default:
+			throw new Exception("Unknown callback type: " + callbackType);
+		}
+	}
+
+	public static String getJavaTypeName(CallbackMethodParameter parameter) throws Exception{
+		switch (parameter.getType()) {
+		case DTO:
+			return getDTOClassName(parameter.getDTOClassName());
+		case NON_NULLABE_LONG:
+			return "long";
+		case NULLABLE_LONG:
+			return "Long";
+		case NON_NULLABLE_BOOLEAN:
+			return "boolean";
+		case NULLABLE_BOOLEAN:
+			return "Boolean";
+		case NON_NULLABLE_INT:
+			return "int";
+		case NULLABLE_INT:
+			return "Integer";
+		case STRING:
+			return "String";
+		case LIST_OF_STRING:
+			return "List<String>";
+		}
+		throw new Exception("Unknown parameter type: " + parameter.getType());
+	}
+
+	public static String createCallbackMethodName(String methodName, CallbackType callbackType) throws Exception {
+		String suffix = BaseUtil.idToFirstCharUpperCase(methodName);
+		switch (callbackType) {
+		case CONFIRM:
+			return "onConfirm" + suffix;
+		case STRING_INPUT:
+			return "onStringInput" + suffix;
+		case LIST_CHOOSER:
+			return "onListChooser" + suffix;
+		default:
+			throw new Exception("Unknown callback type: " + callbackType);
+		}
+	}
+
 
 
 }

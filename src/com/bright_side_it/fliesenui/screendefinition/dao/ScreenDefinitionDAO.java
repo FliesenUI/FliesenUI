@@ -16,12 +16,12 @@ import com.bright_side_it.fliesenui.base.util.XMLUtil;
 import com.bright_side_it.fliesenui.project.model.AssistValue;
 import com.bright_side_it.fliesenui.screendefinition.logic.NodePathLogic;
 import com.bright_side_it.fliesenui.screendefinition.model.NodePath;
+import com.bright_side_it.fliesenui.screendefinition.model.NodePath.DefinitionDocumentType;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
+import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinition;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefinitionDAOResult;
 import com.bright_side_it.fliesenui.screendefinition.model.ScreenDefionitionReadException;
-import com.bright_side_it.fliesenui.screendefinition.model.NodePath.DefinitionDocumentType;
-import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem.ProblemType;
 import com.bright_side_it.fliesenui.validation.util.ValidationUtil;
 
 public class ScreenDefinitionDAO {
@@ -40,6 +40,7 @@ public class ScreenDefinitionDAO {
         result.add(BaseUtil.createAssistValue(null, LayoutContainerDAO.getNodeName(), "Layout Container"));
         result.add(BaseUtil.createAssistValue(null, DTODeclarationDAO.getNodeName(), "DTO (Data Transfer Object)"));
         result.add(BaseUtil.createAssistValue(null, TimerDAO.getNodeName(), "Timer"));
+        result.add(BaseUtil.createAssistValue(null, CallbackMethodDAO.getNodeName(), "Callback method for confirm dialog, list chooser, etc."));
         result.add(BaseUtil.createAssistValue(null, EventListenerDAO.NODE_NAME_LISTEN_TO_BACK_ACTION, "Listen to back button action (Browser, Android)"));
         result.add(BaseUtil.createAssistValue(null, PluginInstanceDAO.getNodeName(), "Plugin (Defined in separate file)"));
         return result;
@@ -88,6 +89,7 @@ public class ScreenDefinitionDAO {
         DTODeclarationDAO dtoDeclarationDAO = new DTODeclarationDAO();
         TimerDAO timerDAO = new TimerDAO();
         EventListenerDAO eventListenerDAO = new EventListenerDAO();
+        CallbackMethodDAO callbackMethodDAO = new CallbackMethodDAO();
         PluginInstanceDAO pluginInstanceDAO = new PluginInstanceDAO();
         for (Node i : XMLUtil.getChildrenWithoutTextNodes(root)) {
             NodePath childNodePath = nodePathLogic.createChildNodePath(nodePath, nodeIndex);
@@ -98,6 +100,8 @@ public class ScreenDefinitionDAO {
                     dtoDeclarationDAO.readDTODeclaration(i, childNodePath, result);
                 } else if (timerDAO.isTimerNode(i)) {
                 	timerDAO.readTimerNode(i, childNodePath, result);
+                } else if (callbackMethodDAO.isCallbackMethodNode(i)) {
+                	callbackMethodDAO.readCallbackMethod(i, childNodePath, result);
                 } else if (pluginInstanceDAO.isPluginDeclarationNode(i)) {
                 	pluginInstanceDAO.readPluginInstance(i, childNodePath, result, null);
                 } else if (eventListenerDAO.isEventListenerNode(i.getNodeName())) {

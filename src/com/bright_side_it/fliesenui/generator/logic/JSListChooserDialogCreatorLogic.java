@@ -8,6 +8,7 @@ public class JSListChooserDialogCreatorLogic {
 		
 		sb.append("    $scope.showListChooser = function(parameter){\n");
 		sb.append("    	$scope.listChooserReferenceID = parameter.referenceID;\n");
+		sb.append("    	$scope.listChooserCallbackData = parameter.callbackData;\n");
 		sb.append("    	$scope.listChooserTitle = parameter.title;\n");
 		sb.append("    	$scope.listChooserMultiselect = parameter.multiSelect;\n");
 		sb.append("    	$scope.listChooserShowIcons = parameter.showIcons;\n");
@@ -62,7 +63,7 @@ public class JSListChooserDialogCreatorLogic {
 		sb.append("               + '      <md-button ng-click=\"cancel();\">'\n");
 		sb.append("               + '       {{listChooserCancelText}}'\n");
 		sb.append("               + '      </md-button>'\n");
-		sb.append("               + '      <md-button ng-click=\"listChooser_okClicked();hide();\" ng-visible=\"listChooserMultiselect\">'\n");
+		sb.append("               + '      <md-button ng-click=\"hide();listChooser_okClicked();\" ng-visible=\"listChooserMultiselect\">'\n");
 		sb.append("               + '        {{listChooserOKText}}'\n");
 		sb.append("               + '      </md-button>'\n");
 		sb.append("               + '    </md-dialog-actions>'\n");
@@ -100,8 +101,8 @@ public class JSListChooserDialogCreatorLogic {
 		sb.append("    	            //: select item\n");
 		sb.append("        	        item.selected = !item.selected;\n");
 		sb.append("        	        	  \n");
-		sb.append("        	        $scope.listChooser_okClicked();        		  \n");
 		sb.append("    	        	$mdDialog.hide(\"\");\n");
+		sb.append("        	        $scope.listChooser_okClicked();        		  \n");
 		sb.append("    	        }\n");
 		sb.append("    	    }\n");
 		sb.append("        };\n");
@@ -120,6 +121,7 @@ public class JSListChooserDialogCreatorLogic {
 		sb.append("        console.log(\"selected ids: \" + selectedIDs);\n");
 		sb.append("        var request = " + screenIDPrefix + "createRequest(\"onListChooserResult\");\n");
 		sb.append("        request.parameters[\"referenceID\"] = $scope.listChooserReferenceID;\n");
+		sb.append("        request.parameters[\"callbackData\"] = $scope.listChooserCallbackData;\n");
 		sb.append("        request.parameters[\"selectedIDs\"] = selectedIDs;\n");
 		sb.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		sb.append("    }\n");
@@ -128,6 +130,7 @@ public class JSListChooserDialogCreatorLogic {
 		sb.append("	    console.log(\"list chooser: cancelled\");\n");
 		sb.append("        var request = " + screenIDPrefix + "createRequest(\"onListChooserResult\");\n");
 		sb.append("        request.parameters[\"referenceID\"] = $scope.listChooserReferenceID;\n");
+		sb.append("        request.parameters[\"callbackData\"] = $scope.listChooserCallbackData;\n");
 		sb.append("        request.parameters[\"selectedIDs\"] = null;\n");
 		sb.append("        " + screenIDPrefix + "executeRequest(request);\n");
 		sb.append("    }\n");

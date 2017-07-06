@@ -16,6 +16,7 @@ import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.SharedReplyInterface;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethod.CallbackType;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.ImageSource;
@@ -78,6 +79,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append("import java.util.List;\n");
         result.append("import java.util.Collection;\n");
         result.append("import java.util.TreeSet;\n");
+        result.append("import java.util.Set;\n");
+        result.append("import java.util.ArrayList;\n");
+        result.append("import java.util.HashSet;\n");
         result.append("\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIAbstractReply;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIUtil;\n");
@@ -88,7 +92,13 @@ public class JavaScreenReplyCreatorLogic {
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelImageAssetList;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelList;\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIReplyAction.ReplyActionType;\n");
-        
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".InputDialogParameters;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".ConfirmDialogParameters;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".ListChooserParameters;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabel;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".IDLabelImageAsset;\n");
+        result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".ListChooserItem;\n");
+
         if (imageAssetsExist(project)) {
             result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + ".FLUIImageAssets.ImageAsset;\n");
         }
@@ -110,6 +120,9 @@ public class JavaScreenReplyCreatorLogic {
         result.append(createSelectBoxMethods(screenDefinition, signatures));
         result.append(createTableMethods(screenDefinition, signatures));
         result.append(createOpenScreenMethods(project, signatures));
+        result.append(createInputDialogMethod(project, screenDefinition, signatures));
+        result.append(createConfirmDialogMethod(project, screenDefinition, signatures));
+        result.append(createListChooserDialogMethods(project, screenDefinition, signatures));
         result.append("}");
 
         if (generateCode){
@@ -122,7 +135,135 @@ public class JavaScreenReplyCreatorLogic {
         return signatures;
     }
 
-    private String generateImplementsStatements(Project project, ScreenDefinition screenDefinition) {
+    private StringBuilder createListChooserDialogMethods(Project project, ScreenDefinition screenDefinition, List<String> signatures) throws Exception {
+    	String dialogOptionsClassName = GeneratorUtil.getDialogOptionsClassName(screenDefinition, CallbackType.LIST_CHOOSER);
+    	
+    	StringBuilder result = new StringBuilder();
+    	appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelImageAssetList items, Collection<String> selectedIDs){\n");
+    	result.append("        return showListChooser(referenceID, multiSelect, showFilter, title, DEFAULT_OK_TEXT, DEFAULT_CANCEL_TEXT, items, selectedIDs);\n");
+    	result.append("    }\n");
+    	result.append("    \n");
+    	
+    	appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelList items, Collection<String> selectedIDs){\n");
+    	result.append("        return showListChooser(referenceID, multiSelect, showFilter, title, DEFAULT_OK_TEXT, DEFAULT_CANCEL_TEXT, items, selectedIDs);\n");
+    	result.append("    }\n");
+    	result.append("    \n");
+    	
+    	appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelImageAssetList items, Collection<String> selectedIDs){\n");
+    	result.append("    	ListChooserParameters parameters = createListChooserParameters(referenceID, multiSelect, showFilter, title, okText, cancelText);\n");
+    	result.append("    	Set<String> selectedIDsSet = new HashSet<String>();\n");
+    	result.append("    	if (selectedIDs != null){\n");
+    	result.append("    		selectedIDsSet = new HashSet<String>(selectedIDs);\n");
+    	result.append("    	}\n");
+    	result.append("    	List<ListChooserItem> chooserItems = new ArrayList<ListChooserItem>();\n");
+    	result.append("    	for (IDLabelImageAsset i: items.getItems()){\n");
+    	result.append("    		chooserItems.add(createItem(i.getID(), i.getLabel(), i.getImageAssetID(), selectedIDsSet.contains(i.getID())));\n");
+    	result.append("    	}\n");
+    	result.append("    	parameters.setShowIcons(true);\n");
+    	result.append("    	parameters.setItems(chooserItems);\n");
+    	result.append("    	replyDTO.setListChooserParameters(parameters);\n");
+    	result.append("    	\n");
+    	result.append("        if (recordMode){\n");
+    	result.append("            addRecordedAction(ReplyActionType.SHOW_LIST_CHOOSER_IMGS, \"showListChooser(\" + escapeString(referenceID) + \", \" + multiSelect + \", \" + showFilter + \", \" + escapeString(title) \n");
+    	result.append("        			+ \", \" + escapeString(okText) + \", \" + escapeString(cancelText) + \", \", gson.toJson(items), selectedIDs);\n");
+    	result.append("        }\n");
+    	result.append("\n");
+    	result.append("        return new " + dialogOptionsClassName + "(this, parameters);\n");
+    	result.append("    }\n");
+    	result.append("\n");
+    	
+    	appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelList items, Collection<String> selectedIDs){\n");
+    	result.append("    	ListChooserParameters parameters = createListChooserParameters(referenceID, multiSelect, showFilter, title, okText, cancelText);\n");
+    	result.append("    	Set<String> selectedIDsSet = new HashSet<String>();\n");
+    	result.append("    	if (selectedIDs != null){\n");
+    	result.append("    		selectedIDsSet = new HashSet<String>(selectedIDs);\n");
+    	result.append("    	}\n");
+    	result.append("    	List<ListChooserItem> chooserItems = new ArrayList<ListChooserItem>();\n");
+    	result.append("    	for (IDLabel i: items.getItems()){\n");
+    	result.append("    		chooserItems.add(createItem(i.getID(), i.getLabel(), null, selectedIDsSet.contains(i.getID())));\n");
+    	result.append("    	}\n");
+    	result.append("    	parameters.setShowIcons(false);\n");
+    	result.append("    	parameters.setItems(chooserItems);\n");
+    	result.append("    	replyDTO.setListChooserParameters(parameters);\n");
+    	result.append("        if (recordMode){\n");
+    	result.append("        	addRecordedAction(ReplyActionType.SHOW_LIST_CHOOSER_TEXTS, \"showListChooser(\" + escapeString(referenceID) + \", \" + multiSelect + \", \" + showFilter + \", \" + escapeString(title) \n");
+    	result.append("        			+ \", \" + escapeString(okText) + \", \" + escapeString(cancelText) + \", \", gson.toJson(items), selectedIDs);\n");
+    	result.append("        }\n");
+    	result.append("        return new " + dialogOptionsClassName + "(this, parameters);\n");
+    	result.append("}\n");
+    	result.append("\n");
+    	
+    	
+    	result.append("    private ListChooserParameters createListChooserParameters(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText) {\n");
+    	result.append("        ListChooserParameters parameters = new ListChooserParameters();\n");
+    	result.append("        parameters.setReferenceID(referenceID);\n");
+    	result.append("        parameters.setMultiSelect(multiSelect);\n");
+    	result.append("        parameters.setShowFilter(showFilter);\n");
+    	result.append("        parameters.setTitle(title);\n");
+    	result.append("        parameters.setOkText(okText);\n");
+    	result.append("        parameters.setCancelText(cancelText);\n");
+    	result.append("        return parameters;\n");
+    	result.append("    }\n");
+    	result.append("\n");
+    	result.append("    private ListChooserItem createItem(String id, String label, String imageAssetID, boolean selected) {\n");
+    	result.append("        ListChooserItem result = new ListChooserItem();\n");
+    	result.append("        result.setID(id);\n");
+    	result.append("        result.setLabel(label);\n");
+    	result.append("        result.setImageAssetID(imageAssetID);\n");
+    	result.append("        result.setSelected(selected);\n");
+    	result.append("        return result;\n");
+    	result.append("    }\n");
+    	result.append("\n");
+
+		return result;
+	}
+
+	private StringBuilder createConfirmDialogMethod(Project project, ScreenDefinition screenDefinition, List<String> signatures) throws Exception {
+        StringBuilder result = new StringBuilder();
+    	String dialogOptionsClassName = GeneratorUtil.getDialogOptionsClassName(screenDefinition, CallbackType.CONFIRM);
+        appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showConfirmDialog(String referenceID, String title, String textContent, String okText, String cancelText) {\n");
+        result.append("        ConfirmDialogParameters confirmDialogParameters = new ConfirmDialogParameters();\n");
+        result.append("        confirmDialogParameters.setReferenceID(referenceID);\n");
+        result.append("        confirmDialogParameters.setTitle(title);\n");
+        result.append("        confirmDialogParameters.setTextContent(textContent);\n");
+        result.append("        confirmDialogParameters.setOkText(okText);\n");
+        result.append("        confirmDialogParameters.setCancelText(cancelText);\n");
+        result.append("        replyDTO.setConfirmDialogParameters(confirmDialogParameters);\n");
+        result.append("        if (recordMode){\n");
+        result.append("            addRecordedAction(\"showConfirmDialog(\" + escapeString(referenceID) + \", \" + escapeString(title) + \", \" + escapeString(textContent) \n");
+        result.append("        			+ \", \" + escapeString(okText) + \", \" + escapeString(cancelText)+ \");\");\n");
+        result.append("        }\n");
+    	result.append("        return new " + dialogOptionsClassName + "(this, confirmDialogParameters);\n");
+        result.append("    }\n");
+        result.append("\n");
+        return result;
+    }
+
+	private StringBuilder createInputDialogMethod(Project project, ScreenDefinition screenDefinition, List<String> signatures) throws Exception {
+		    StringBuilder result = new StringBuilder();
+		    String dialogOptionsClassName = GeneratorUtil.getDialogOptionsClassName(screenDefinition, CallbackType.STRING_INPUT);
+		    appendAndAdd(result, signatures, "    public " + dialogOptionsClassName + " showInputDialog(String referenceID, String title, String textContent, String label, String initialValueText, String okText, String cancelText) {\n");
+		    result.append("        InputDialogParameters inputDialogParameters = new InputDialogParameters();\n");
+		    result.append("        inputDialogParameters.setReferenceID(referenceID);\n");
+		    result.append("        inputDialogParameters.setTitle(title);\n");
+		    result.append("        inputDialogParameters.setTextContent(textContent);\n");
+		    result.append("        inputDialogParameters.setLabel(label);\n");
+		    result.append("        inputDialogParameters.setInitialValueText(initialValueText);\n");
+		    result.append("        inputDialogParameters.setOkText(okText);\n");
+		    result.append("        inputDialogParameters.setCancelText(cancelText);\n");
+		    result.append("        replyDTO.setInputDialogParameters(inputDialogParameters);\n");
+		    result.append("        if (recordMode){\n");
+		    result.append("        	addRecordedAction(\"showInputDialog(\" + escapeString(referenceID) + \", \" + escapeString(title) + \", \" + escapeString(textContent) \n");
+		    result.append("        			+ \", \" + escapeString(label) + \", \" + escapeString(initialValueText) + \", \" + escapeString(okText) \n");
+		    result.append("        			+ \", \" + escapeString(cancelText)+ \");\");\n");
+		    result.append("        }\n");
+		    result.append("        return new " + dialogOptionsClassName + "(this, inputDialogParameters);\n");
+		    result.append("    }\n");
+		    result.append("\n");
+		    return result;
+	}
+
+	private String generateImplementsStatements(Project project, ScreenDefinition screenDefinition) {
     	StringBuilder result = new StringBuilder();
     	for (SharedReplyInterface sharedReplyInterface: BaseUtil.toEmptyMapIfNull(project.getProjectDefinition().getSharedReplyInterfaces()).values()){
     		if (sharedReplyInterface.getScreenIDs().contains(screenDefinition.getID())){
@@ -145,12 +286,7 @@ public class JavaScreenReplyCreatorLogic {
     	signatures.add("public StringLanguage getCurrentLanguage() {");
     	signatures.add("public void openURL(String url, boolean openInNewWindow) {");
     	signatures.add("public void downloadFile(String fileStreamID){");
-    	signatures.add("public void showInputDialog(String referenceID, String title, String textContent, String label, String initialValueText, String okText, String cancelText) {");
-    	signatures.add("public void showConfirmDialog(String referenceID, String title, String textContent, String okText, String cancelText) {");
-		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelImageAssetList items, Collection<String> selectedIDs){");
-		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, IDLabelList items, Collection<String> selectedIDs){");
-		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelImageAssetList items, Collection<String> selectedIDs){");
-		signatures.add("public void showListChooser(String referenceID, boolean multiSelect, boolean showFilter, String title, String okText, String cancelText, IDLabelList items, Collection<String> selectedIDs){");
+    	signatures.add("public FLUIAbstractReply getAbstractReply(){");
 	}
 
 	private StringBuilder createOpenScreenMethods(Project project, List<String> signatures) {
@@ -187,7 +323,7 @@ public class JavaScreenReplyCreatorLogic {
         return !BaseUtil.toEmptyMapIfNull(project.getImageAssetDefinitionsMap()).isEmpty();
     }
 
-    private StringBuilder createDTOImportStatements(Project project, ScreenDefinition screenDefinition) {
+    public static StringBuilder createDTOImportStatements(Project project, ScreenDefinition screenDefinition) {
         StringBuilder result = new StringBuilder();
         for (String i : GeneratorUtil.getRequiredDTOClassNames(project, screenDefinition)) {
             result.append("import " + GeneratorConstants.GENERATED_DTO_PACKAGE_NAME + "." + i + ";\n");

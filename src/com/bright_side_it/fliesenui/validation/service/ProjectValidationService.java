@@ -9,6 +9,8 @@ import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.project.model.ProjectResource;
 import com.bright_side_it.fliesenui.screendefinition.model.ResourceDefinitionProblem;
 import com.bright_side_it.fliesenui.validation.logic.BasicWidgetValidationLogic;
+import com.bright_side_it.fliesenui.validation.logic.CallbackMethodParameterValidationLogic;
+import com.bright_side_it.fliesenui.validation.logic.CallbackMethodValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.CodeEditorWidgetValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.ColorPaletteValidationLogic;
 import com.bright_side_it.fliesenui.validation.logic.DTODefinitionValidationLogic;
@@ -44,6 +46,8 @@ public class ProjectValidationService {
         new ColorPaletteValidationLogic().validate(project);
         new StringResourceValidationLogic().validate(project);
         new DTODefinitionValidationLogic().validate(project);
+        new CallbackMethodValidationLogic().validate(project);
+        new CallbackMethodParameterValidationLogic().validate(project);
         new ImageAssetValidationLogic().validate(project);
         new TableWidgetPropertiesValidationLogic().validate(project);
         new TableWidgetDTOValidationLogic().validate(project);

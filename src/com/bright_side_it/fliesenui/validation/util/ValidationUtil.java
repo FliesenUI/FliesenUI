@@ -1,6 +1,7 @@
 package com.bright_side_it.fliesenui.validation.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,22 @@ import com.bright_side_it.fliesenui.stringres.model.StringResource;
 import com.bright_side_it.fliesenui.stringres.model.StringResourceItem;
 
 public class ValidationUtil {
+    private static final Set<Character> ALLOWED_CHARS_IN_IDS = createAllowedCharsInIDs();
+
+    private static Set<Character> createAllowedCharsInIDs() {
+        Set<Character> result = new HashSet<>();
+        for (char i = 'a'; i <= 'z'; i++) {
+            result.add(i);
+        }
+        for (char i = 'A'; i <= 'Z'; i++) {
+            result.add(i);
+        }
+        for (char i = '0'; i <= '9'; i++) {
+            result.add(i);
+        }
+        return result;
+    }
+	
     public static void addError(Project project, ScreenDefinition screenDefinition, NodePath nodePath, String attribute,
             ProblemType type, String message) {
         if (project.getScreenDefinitionProblemsMap() == null) {
@@ -194,6 +211,27 @@ public class ValidationUtil {
 			return strings.containsKey(text.substring(BaseConstants.STRING_RESOURCE_PREFIX.length()));
 		}
 		return true;
+	}
+	
+	public static boolean isValidJavaVariableName(String string){
+		if (string == null){
+			return false;
+		}
+		if (string.isEmpty()){
+			return false;
+		}
+        char firstChar = string.charAt(0);
+        if ((firstChar < 'a') || (firstChar > 'z')) {
+        	return false;
+        }
+
+        for (char i : string.toCharArray()) {
+            if (!ALLOWED_CHARS_IN_IDS.contains(i)) {
+                return false;
+            }
+        }
+
+        return true;
 	}
 	
 }

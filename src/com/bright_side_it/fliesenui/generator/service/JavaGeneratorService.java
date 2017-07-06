@@ -12,10 +12,12 @@ import com.bright_side_it.fliesenui.base.util.BaseConstants.LanguageFlavor;
 import com.bright_side_it.fliesenui.base.util.BaseUtil;
 import com.bright_side_it.fliesenui.dto.model.DTODefinition;
 import com.bright_side_it.fliesenui.generator.logic.FLUIControlCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.FLUIReplyUtilCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.ImageStreamURLConnectionCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaConstantsCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaDTOBuilerCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaDTOCreatorLogic;
+import com.bright_side_it.fliesenui.generator.logic.JavaDialogOptionsCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenListenerCreatorLogic;
 import com.bright_side_it.fliesenui.generator.logic.JavaScreenReplyCreatorLogic;
@@ -54,6 +56,7 @@ public class JavaGeneratorService {
         if (languageFlavor == LanguageFlavor.JAVA){
         	new FLUIControlCreatorLogic().generateFLUIControl(project.getScreenDefinitionsMap().values(), javaBaseDir);
         }
+        new FLUIReplyUtilCreatorLogic().generate(project, javaBaseDir);
         new ImageStreamURLConnectionCreatorLogic().generateImageStreamURLConnection(project, javaBaseDir, languageFlavor);
 
         File screenPackageDir = GeneratorUtil.getScreenPackageDir(javaBaseDir);
@@ -62,7 +65,8 @@ public class JavaGeneratorService {
         JavaScreenRequestCreatorLogic javaScreenRequestCreatorLogic = new JavaScreenRequestCreatorLogic();
         JavaScreenReplyCreatorLogic javaScreenReplyCreatorLogic = new JavaScreenReplyCreatorLogic();
         JavaScreenListenerCreatorLogic javaScreenListenerCreatorLogic = new JavaScreenListenerCreatorLogic();
-
+        JavaDialogOptionsCreatorLogic javaDialogOptionsCreatorLogic  = new JavaDialogOptionsCreatorLogic();
+        
         Map<String, List<String>> screenToReplySignaturesMap = new TreeMap<>();
         for (ScreenDefinition i : project.getScreenDefinitionsMap().values()) {
         	screenToReplySignaturesMap.put(i.getID(), javaScreenReplyCreatorLogic.getMethodSignatures(project, i));
@@ -77,6 +81,7 @@ public class JavaGeneratorService {
             javaScreenReplyCreatorLogic.createJava(project, i, screenPackageDir);
             javaScreenListenerCreatorLogic.createJava(project, i, screenPackageDir);
             javaScreenRequestCreatorLogic.createJava(project, i, screenPackageDir);
+            javaDialogOptionsCreatorLogic.createJava(project, i, screenPackageDir);
         }
 
         

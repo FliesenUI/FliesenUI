@@ -203,5 +203,57 @@ public class FLUIUtil {
 		return (event.getKeyType() == keyType);
 	}
 
+    public static int toLine(String text, int posInText) {
+        int line = 0;
+        int currentPos = 0;
+        for (char i : text.toCharArray()) {
+            currentPos++;
+            if (currentPos > posInText) {
+                return line;
+            }
+            if (i == '\n') {
+                line++;
+            }
+        }
+        return line;
+    }
+
+    public static int toPosInLine(String text, int posInText) {
+        int pos = text.lastIndexOf("\n", posInText);
+        if (pos < 0) {
+            return posInText;
+        }
+        if (pos == posInText) {
+            //: special case: at the pos in text there is a \n. This means the cursor is at the end of the previous line
+            if (pos == 0) {
+                return 0;
+            }
+            int previousLineStart = text.lastIndexOf("\n", pos - 1);
+            if (previousLineStart < 0) {
+                return pos;
+            }
+            return posInText - previousLineStart - 1;
+        }
+
+        return posInText - pos - 1;
+    }
+
+    public static int toPosInText(String text, int line, int posInLine) {
+        int lineBreakPos = 0;
+        for (int i = 0; i < line; i++) {
+            lineBreakPos = text.indexOf("\n", lineBreakPos);
+            lineBreakPos++;
+            if (lineBreakPos < 0) {
+                return -1;
+            }
+            if (lineBreakPos > 0) {
+                if (text.charAt(lineBreakPos - 1) == '\r') {
+                    lineBreakPos++;
+                }
+            }
+        }
+        return lineBreakPos + posInLine;
+    }
+
 
 }

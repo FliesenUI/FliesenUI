@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class XMLParserUtil {
     private static final String[] LETTER = createLetterArray();
@@ -329,5 +331,51 @@ public class XMLParserUtil {
     	}
 
     }
+
+	public static Set<String> readAttributeNamesInTagAtPos(String text, int pos) {
+		Set<String> result = new TreeSet<>();
+
+		if (text.length() == 0){
+			return result;
+		}
+
+		int tagStartPos = text.lastIndexOf("<", pos);
+		if (tagStartPos < 0){
+			tagStartPos = 0;
+		}
+		
+		
+		int tagEndPos = TextUtil.nextIndexOf(text, pos, "<", ">", "/");
+		if (tagEndPos < 0){
+			tagEndPos = text.length();
+		}
+		
+		if (tagStartPos == tagEndPos){
+			return result;
+		}
+		
+		String useText = text.substring(tagStartPos + 1, tagEndPos).trim().replace("\"", "'");
+		while (useText.length() > 1){
+			int attributeStart = useText.indexOf(" ");
+			if (attributeStart < 0){
+				return result;
+			}
+			int attributeEnd = useText.indexOf("=");
+			String attributeName = useText.substring(attributeStart, attributeEnd).trim();
+			result.add(attributeName);
+			
+			int valueStart = useText.indexOf("'", attributeEnd);
+			if (valueStart < 0){
+				return result;
+			}
+			int valueEnd = useText.indexOf("'", valueStart + 1);
+			if (valueEnd < 0){
+				return result;
+			}
+			useText = " " + useText.substring(valueEnd + 1).trim();
+		}
+		
+		return result;
+	}
 
 }

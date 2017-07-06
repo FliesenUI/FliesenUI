@@ -4,6 +4,10 @@ UI framework for simpler, faster, cleaner development to create a robust, fast, 
 For more information please visit the [project web site](http://www.bright-side-it.com/FliesenUI/).
 
 ## Version info
+
+### 1.4.0
+ - callback for string choosers, list choosers and confirm dialogs
+
 ### 1.3.0
  - custom color themes using user defined palettes
  - border layout

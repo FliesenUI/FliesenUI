@@ -18,6 +18,9 @@ import com.bright_side_it.fliesenui.plugin.model.PluginVariable;
 import com.bright_side_it.fliesenui.project.model.Project;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.BasicWidget.BasicWidgetType;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethod;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethod.CallbackType;
+import com.bright_side_it.fliesenui.screendefinition.model.CallbackMethodParameter;
 import com.bright_side_it.fliesenui.screendefinition.model.CodeEditorWidget;
 import com.bright_side_it.fliesenui.screendefinition.model.DTODeclaration;
 import com.bright_side_it.fliesenui.screendefinition.model.EventListener;
@@ -48,7 +51,8 @@ public class JavaScreenListenerCreatorLogic {
         result.append("\n");
         result.append("import " + GeneratorConstants.GENERATED_CORE_PACKAGE_NAME + "." + GeneratorConstants.CLIENT_PROPERTIES_DTO_CLASS_NAME + ";\n");
         result.append("import java.util.List;\n");
-        result.append(createDTOImportStatements(screenDefinition));
+        result.append("import java.io.InputStream;\n");
+        result.append(createDTOImportStatements(project));
         result.append("\n");
         result.append("public interface " + className + "{\n");
         result.append(createOnLoadedMethod(project, screenDefinition, replyClassName));
@@ -65,13 +69,58 @@ public class JavaScreenListenerCreatorLogic {
 //        result.append(createAllCodeEditorMethods(screenDefinition, replyClassName));
         result.append(createFileUploadMethods(project, screenDefinition));
         result.append(createEventListenerMethods(project, screenDefinition));
+        result.append(createCallbackListenerMethods(project, screenDefinition, replyClassName));
         result.append("}");
 
         result = GeneratorUtil.addJavaGeneratedCommend(result);
         FileUtil.writeStringToFile(destFile, result.toString());
     }
 
-    private StringBuilder createOnLoadedMethod(Project project, ScreenDefinition screenDefinition, String replyClassName) {
+    private StringBuilder createCallbackListenerMethods(Project project, ScreenDefinition screenDefinition, String replyClassName) throws Exception {
+    	StringBuilder result = new StringBuilder();
+    	
+    	for (CallbackMethod i: BaseUtil.toEmptyCollectionIfNull(screenDefinition.getCallbackMethods())){
+    		String methodName = GeneratorUtil.createCallbackMethodName(i.getName(), i.getType());
+    		String fixParameters = createFixParameters(i.getType(), replyClassName);
+    		String callbackMethodParameters = createCallbackMethodParameters(i.getParameters());
+    		result.append("    void " + methodName + "(" + fixParameters + ", " + callbackMethodParameters + ");\n");
+    	}
+    	
+		return result;
+	}
+
+	private String createCallbackMethodParameters(List<CallbackMethodParameter> parameters) throws Exception {
+		StringBuilder result = new StringBuilder();
+		if ((parameters == null) || (parameters.isEmpty())){
+			return "";
+		}
+		boolean first = true;
+		for (CallbackMethodParameter i: parameters){
+			if (first){
+				first = false;
+			} else {
+				result.append(", ");
+			}
+			result.append(GeneratorUtil.getJavaTypeName(i) + " " + i.getName());
+		}
+		
+		return result.toString();
+	}
+
+	private String createFixParameters(CallbackType callbackType, String replyClassName) throws Exception {
+		switch (callbackType) {
+		case CONFIRM:
+			return replyClassName + " reply, boolean confirmed";
+		case STRING_INPUT:
+			return replyClassName + " reply, String dialogResult";
+		case LIST_CHOOSER:
+			return replyClassName + " reply, java.util.List<String> selectedIDs";
+		default:
+			throw new Exception("Unknown callback type: " + callbackType);
+		}
+	}
+
+	private StringBuilder createOnLoadedMethod(Project project, ScreenDefinition screenDefinition, String replyClassName) {
         StringBuilder result = new StringBuilder();
         result.append("    void onLoaded(" + replyClassName + " reply, "+ GeneratorConstants.CLIENT_PROPERTIES_DTO_CLASS_NAME + " clientProperties");
         if (screenDefinition.getParameterDTOID() != null) {
@@ -83,13 +132,19 @@ public class JavaScreenListenerCreatorLogic {
         return result;
     }
 
-    private StringBuilder createDTOImportStatements(ScreenDefinition screenDefinition) {
+    private StringBuilder createDTOImportStatements(Project project) {
         StringBuilder result = new StringBuilder();
-        result.append("import java.io.InputStream;\n");
-        for (String i : getRequiredDTOClassNames(screenDefinition)) {
-            result.append("import " + GeneratorConstants.GENERATED_DTO_PACKAGE_NAME + "." + i + ";\n");
+        for (String i : project.getDTODefinitionsMap().keySet()) {
+            result.append("import " + GeneratorConstants.GENERATED_DTO_PACKAGE_NAME + "." + GeneratorUtil.getDTOClassName(i) + ";\n");
         }
         return result;
+
+//        StringBuilder result = new StringBuilder();
+//        result.append("import java.io.InputStream;\n");
+//        for (String i : getRequiredDTOClassNames(screenDefinition)) {
+//            result.append("import " + GeneratorConstants.GENERATED_DTO_PACKAGE_NAME + "." + i + ";\n");
+//        }
+//        return result;
     }
 
     private Set<String> getRequiredDTOClassNames(ScreenDefinition screenDefinition) {
